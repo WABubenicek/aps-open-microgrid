@@ -1,0 +1,2546 @@
+{
+  "$schema_note": "Every leaf = {value, source, verified_on, status: verified|unverified|conflict}. Engine refuses to publish any value whose status is conflict; unverified values publish only with an on-page 'unverified' flag. PRELIMINARY - not licensed engineering.",
+  "name": "aps-config",
+  "version": "0.6.0",
+  "changelog": [
+    {
+      "version": "0.6.0",
+      "date": "2026-10-30",
+      "changes": [
+        "C28 resolved: Nantucket in turnkey area",
+        "15K-2P-N default inverter; 12K optional",
+        "Consent text C1 approved (consent-v1)",
+        "0 open conflicts"
+      ]
+    },
+    {
+      "version": "0.5.0",
+      "date": "2026-10-30",
+      "changes": [
+        "27 conflicts resolved: inverter prices from Oct 2026 street listings, datasheet values with URLs, gen XP13000HXT $1,600, suggested picks accepted. Open: C28 Nantucket."
+      ]
+    },
+    {
+      "version": "0.4.1",
+      "date": "2026-10-30",
+      "changes": [
+        "R5 Google chosen; R6 leads to hello@antifragilepower.com; consent text proposed; 48E TPO unverified."
+      ]
+    },
+    {
+      "version": "0.4.0",
+      "date": "2026-10-30",
+      "changes": [
+        "Owner R1-R4 decided; business_model & origination policy; lease/TPO finance path; hosting options (R5 open)."
+      ]
+    },
+    {
+      "version": "0.3.0",
+      "date": "2026-10-30",
+      "changes": [
+        "All US states/utilities from day one: hand-built stub list removed; regions = auto-generated baseline packs (every EIA utility x state) + curated overrides (ma-clc first).",
+        "New data_layer: sources, access, license/cost, rate limits, refresh cadence (verified via web 2026-10-30).",
+        "New status 'auto_sourced' + confidence levels (high/medium/low/none) surfaced in outputs.",
+        "Maintenance policy approved by owner: bots propose sourced diffs, Bill approves before 'verified', 180-day expiry.",
+        "_federal.25D verified expired (IRS OBBB FAQ). Conflicts unchanged: 28."
+      ]
+    },
+    {
+      "version": "0.2.0",
+      "date": "2026-10-29",
+      "changes": [
+        "Nationwide: 'programs' + 'climate' moved into regions.packs (pluggable, keyed state/utility). ma-clc is the first full pack; ma-other and all other states are stubs (unknown/unverified).",
+        "New grid_services module: generic program model; CLC Connected Solutions = instance cs-clc.",
+        "Catalog gains platforms block: Sol-Ark (preferred), EG4, Tesla PW3, Enphase, FranklinWH with capability flags; non-Sol-Ark/Tesla flags NEEDS RESEARCH.",
+        "policy.platform_default removed; platform is an engine decision (hard filter then score).",
+        "Region resolver + degrade policy added. Conflict count unchanged: 28."
+      ]
+    },
+    {
+      "version": "0.1.0",
+      "date": "2026-10-29",
+      "changes": "Initial consolidation of 6 legacy price books + 4 xlsx + engine constants from APS-Design-Extract-2026-10-29. Owner decisions (a)(b)(c) of 2026-10-29 applied. 28 conflicts open (3 more resolved by owner decisions: C11 design fee, C12 markup, C15 CS event basis) (see conflicts.md)."
+    }
+  ],
+  "source_key": {
+    "S": "source/engine/aps-specs.js",
+    "E": "source/legacy/aps-estimator.redacted.html (excerpts in estimator-engine-extract.js)",
+    "D": "source/engine/design.html",
+    "L": "source/engine/aps-design-link.js",
+    "PC": "source/pricing/getConfig-PRICING_CONFIG.js (book 1)",
+    "CAT": "source/pricing/aps_pricing_catalog.json (book 5)",
+    "MCP": "source/pricing/aps_quote_mcp.py (book 6)",
+    "KB": "source/docs/solark_technical_kb.md",
+    "DOC": "source/docs/DESIGN-ENGINE.md",
+    "AUD03": "audit/03-design-backend-models.md \u00a76",
+    "OWN": "OWNER-RULES-AND-HEURISTICS.md",
+    "XLSX": "source/pricing/xlsx/*.cells.md"
+  },
+  "catalog": {
+    "inverters": {
+      "solark-12k-2p-n": {
+        "platform": "sol-ark",
+        "name": {
+          "value": "Sol-Ark 12K-2P-N",
+          "source": "S:279; CAT",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "datasheet_url": "https://sol-ark.com/wp-content/uploads/2024/06/SK150-0003_Rev-3_12K_Datasheet_EN_18June2025.pdf",
+        "continuous_ac_w": {
+          "value": 9000,
+          "source": "datasheet: 9,000 W AC + 3,000 W DC to battery = 12,000 W total https://sol-ark.com/wp-content/uploads/2024/06/SK150-0003_Rev-3_12K_Datasheet_EN_18June2025.pdf",
+          "verified_on": "2026-10-30",
+          "status": "verified"
+        },
+        "continuous_battery_w": {
+          "value": 9000,
+          "source": "S:282; CAT; D:103 battKw",
+          "verified_on": null,
+          "status": "unverified",
+          "note": "CS dispatch cap; 3 copies agree"
+        },
+        "surge_10s_w": {
+          "value": 16000,
+          "source": "CAT solark_12k",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "pv_max_w": {
+          "value": {
+            "usable": 12000,
+            "allowed_stc": 13000
+          },
+          "source": "datasheet Rev 3 https://sol-ark.com/wp-content/uploads/2024/06/SK150-0003_Rev-3_12K_Datasheet_EN_18June2025.pdf",
+          "verified_on": "2026-10-30",
+          "status": "verified"
+        },
+        "gen_port_max_w": {
+          "value": 9600,
+          "source": "manual: GEN input for generators < 9.6 kW, 50 A breaker / 40 A continuous; larger generators go to GRID input https://www.sol-ark.com/wp-content/uploads/2024/06/SK140-0003-002-12K-2P-N-EN-Manual-.pdf",
+          "verified_on": "2026-10-30",
+          "status": "verified"
+        },
+        "max_ac_charge_w": {
+          "value": 9472,
+          "source": "185 A x 51.2 V (derived from datasheet)",
+          "verified_on": "2026-10-30",
+          "status": "verified"
+        },
+        "grid_passthrough_a": {
+          "value": 63,
+          "source": "S gridPortMaxAmps (OWN \u00a71.1)",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "interconnection_risk_ma": {
+          "value": "low",
+          "source": "S interconnectionRisk; E:1675",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "capabilities": {
+          "generator_control_ags": {
+            "value": true,
+            "source": "S:146-170 tiers; KB comms",
+            "verified_on": null,
+            "status": "unverified"
+          },
+          "generator_charges_battery": {
+            "value": true,
+            "source": "S selectGenerator; D:199-219",
+            "verified_on": null,
+            "status": "unverified"
+          },
+          "off_grid": {
+            "value": true,
+            "source": "KB / DOC",
+            "verified_on": null,
+            "status": "unverified"
+          },
+          "closed_loop_battery_comms": {
+            "value": true,
+            "source": "KB",
+            "verified_on": null,
+            "status": "unverified"
+          }
+        },
+        "cs_eligible_clc": {
+          "value": true,
+          "source": "KB: CLC eligible-equipment page lists 12K/8K/5K",
+          "verified_on": "2026-09-09",
+          "status": "verified"
+        },
+        "model_note": {
+          "value": "12K-2P-N = model 'Sol-Ark-12K-P', SKU 12K-2P: one product, no newer 12K variant found",
+          "source": "Sol-Ark 12K datasheet Rev 3 (2025-06-18) https://sol-ark.com/wp-content/uploads/2024/06/SK150-0003_Rev-3_12K_Datasheet_EN_18June2025.pdf",
+          "verified_on": "2026-10-30",
+          "status": "verified"
+        }
+      },
+      "solark-15k-2p-n": {
+        "platform": "sol-ark",
+        "name": {
+          "value": "Sol-Ark 15K-2P-N",
+          "source": "S:331",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "datasheet_url": "https://sol-ark.com/wp-content/uploads/2024/06/SK150-0001_Rev5_15K-Datasheet_EN-18June2025.pdf",
+        "continuous_ac_w": {
+          "value": {
+            "with_pv": 15000,
+            "battery_only": 12000,
+            "battery_only_30min": 13000
+          },
+          "source": "datasheet Rev 5 https://sol-ark.com/wp-content/uploads/2024/06/SK150-0001_Rev5_15K-Datasheet_EN-18June2025.pdf",
+          "verified_on": "2026-10-30",
+          "status": "verified"
+        },
+        "continuous_battery_w": {
+          "value": 12000,
+          "source": "S:334; CAT; D:104",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "surge_10s_w": {
+          "value": 24000,
+          "source": "CAT",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "pv_max_w": {
+          "value": {
+            "usable": 19500,
+            "allowed_stc": 23400
+          },
+          "source": "datasheet Rev 5 https://sol-ark.com/wp-content/uploads/2024/06/SK150-0001_Rev5_15K-Datasheet_EN-18June2025.pdf",
+          "verified_on": "2026-10-30",
+          "status": "verified"
+        },
+        "gen_port_max_w": {
+          "value": 19200,
+          "source": "datasheet: max AC coupled input 19,200 W https://sol-ark.com/wp-content/uploads/2024/06/SK150-0001_Rev5_15K-Datasheet_EN-18June2025.pdf",
+          "verified_on": "2026-10-30",
+          "status": "verified"
+        },
+        "max_ac_charge_w": {
+          "value": 14000,
+          "source": "S:356; D:104",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "grid_passthrough_a": {
+          "value": 200,
+          "source": "S gridPortMaxAmps",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "interconnection_risk_ma": {
+          "value": "medium",
+          "source": "S; E:1676",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "capabilities": {
+          "generator_control_ags": {
+            "value": true,
+            "source": "S/KB",
+            "verified_on": null,
+            "status": "unverified"
+          },
+          "generator_charges_battery": {
+            "value": true,
+            "source": "S",
+            "verified_on": null,
+            "status": "unverified"
+          },
+          "off_grid": {
+            "value": true,
+            "source": "KB",
+            "verified_on": null,
+            "status": "unverified"
+          },
+          "closed_loop_battery_comms": {
+            "value": true,
+            "source": "KB",
+            "verified_on": null,
+            "status": "unverified"
+          }
+        },
+        "cs_eligible_clc": {
+          "value": "pending_eligibility",
+          "source": "KB: NOT on CLC list checked 2026-09-09; audit 01 F-2",
+          "verified_on": "2026-09-09",
+          "status": "unverified"
+        }
+      },
+      "solark-18k-2p-n": {
+        "platform": "sol-ark",
+        "name": {
+          "value": "Sol-Ark 18K-2P-N",
+          "source": "S:387",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "datasheet_url": "https://sol-ark.com/wp-content/uploads/2025/09/18KDatasheet_PS-00036_Rev_7_15July2026.pdf",
+        "continuous_ac_w": {
+          "value": 18000,
+          "source": "S:389; CAT",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "continuous_battery_w": {
+          "value": 18000,
+          "source": "S:390; CAT; D:105",
+          "verified_on": null,
+          "status": "unverified",
+          "note": "18K cap unconfirmed (audit 00 \u00a73)"
+        },
+        "surge_10s_w": {
+          "value": 36000,
+          "source": "CAT",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "pv_max_w": {
+          "value": 28800,
+          "source": "S:392; CAT",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "gen_port_max_w": {
+          "value": 19200,
+          "source": "manual: 100 A terminal, 80 A continuous = 19.2 kW (datasheet Rev 7 lists 28.8 kW / 120 A; conservative value used) https://www.sol-ark.com/wp-content/uploads/2025/09/18K_Installation-Manual_Rev2_10Sept2025-1.pdf",
+          "verified_on": "2026-10-30",
+          "status": "verified"
+        },
+        "max_ac_charge_w": {
+          "value": 17920,
+          "source": "350 A x 51.2 V (derived from datasheet) https://sol-ark.com/wp-content/uploads/2025/09/18KDatasheet_PS-00036_Rev_7_15July2026.pdf",
+          "verified_on": "2026-10-30",
+          "status": "verified"
+        },
+        "grid_passthrough_a": {
+          "value": 200,
+          "source": "S",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "interconnection_risk_ma": {
+          "value": "high",
+          "source": "S; E:1677",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "capabilities": {
+          "generator_control_ags": {
+            "value": true,
+            "source": "S/KB",
+            "verified_on": null,
+            "status": "unverified"
+          },
+          "generator_charges_battery": {
+            "value": true,
+            "source": "S",
+            "verified_on": null,
+            "status": "unverified"
+          },
+          "off_grid": {
+            "value": true,
+            "source": "KB",
+            "verified_on": null,
+            "status": "unverified"
+          },
+          "closed_loop_battery_comms": {
+            "value": true,
+            "source": "KB",
+            "verified_on": null,
+            "status": "unverified"
+          }
+        },
+        "cs_eligible_clc": {
+          "value": "pending_eligibility",
+          "source": "KB: NOT on CLC list 2026-09-09",
+          "verified_on": "2026-09-09",
+          "status": "unverified"
+        }
+      },
+      "tesla-powerwall-3": {
+        "platform": "tesla",
+        "name": {
+          "value": "Tesla Powerwall 3 (integrated inverter + 13.5 kWh)",
+          "source": "NEW: Tesla datasheet https://energylibrary.tesla.com/docs/Public/EnergyStorage/Powerwall/3/Datasheet/en-us/Powerwall-3-Datasheet.pdf",
+          "verified_on": "2026-10-29",
+          "status": "verified"
+        },
+        "datasheet_url": {
+          "value": "https://energylibrary.tesla.com/docs/Public/EnergyStorage/Powerwall/3/Datasheet/en-us/Powerwall-3-Datasheet.pdf",
+          "source": "web search 2026-10-29",
+          "verified_on": "2026-10-29",
+          "status": "verified"
+        },
+        "continuous_ac_w": {
+          "value": 11500,
+          "source": "https://energylibrary.tesla.com/docs/Public/EnergyStorage/Powerwall/3/Datasheet/en-us/Powerwall-3-Datasheet.pdf (configurable 5.8/7.6/10/11.5 kW)",
+          "verified_on": "2026-10-29",
+          "status": "verified"
+        },
+        "continuous_battery_w": {
+          "value": 11500,
+          "source": "https://energylibrary.tesla.com/docs/Public/EnergyStorage/Powerwall/3/Datasheet/en-us/Powerwall-3-Datasheet.pdf",
+          "verified_on": "2026-10-29",
+          "status": "verified"
+        },
+        "off_grid_pv_only_max_w": {
+          "value": 15400,
+          "source": "https://energylibrary.tesla.com/docs/Public/EnergyStorage/Powerwall/3/Datasheet/en-us/Powerwall-3-Datasheet.pdf (only with 80 A breaker, sufficient solar)",
+          "verified_on": "2026-10-29",
+          "status": "verified"
+        },
+        "pv_max_w": {
+          "value": 20000,
+          "source": "https://energylibrary.tesla.com/docs/Public/EnergyStorage/Powerwall/3/Datasheet/en-us/Powerwall-3-Datasheet.pdf '20 kW DC of solar'",
+          "verified_on": "2026-10-29",
+          "status": "verified"
+        },
+        "load_start_lra": {
+          "value": 185,
+          "source": "https://energylibrary.tesla.com/docs/Public/EnergyStorage/Powerwall/3/Datasheet/en-us/Powerwall-3-Datasheet.pdf",
+          "verified_on": "2026-10-29",
+          "status": "verified"
+        },
+        "max_charge_w": {
+          "value": 5000,
+          "source": "https://energylibrary.tesla.com/docs/Public/EnergyStorage/Powerwall/3/Datasheet/en-us/Powerwall-3-Datasheet.pdf (8 kW with expansions)",
+          "verified_on": "2026-10-29",
+          "status": "verified"
+        },
+        "usable_kwh": {
+          "value": 13.5,
+          "source": "https://energylibrary.tesla.com/docs/Public/EnergyStorage/Powerwall/3/Datasheet/en-us/Powerwall-3-Datasheet.pdf (AC, BOL, 25C)",
+          "verified_on": "2026-10-29",
+          "status": "verified"
+        },
+        "round_trip_eff": {
+          "value": 0.89,
+          "source": "https://energylibrary.tesla.com/docs/Public/EnergyStorage/Powerwall/3/Datasheet/en-us/Powerwall-3-Datasheet.pdf solar->battery->home",
+          "verified_on": "2026-10-29",
+          "status": "verified"
+        },
+        "max_units": {
+          "value": 4,
+          "source": "https://energylibrary.tesla.com/docs/Public/EnergyStorage/Powerwall/3/Datasheet/en-us/Powerwall-3-Datasheet.pdf up to 4 PW3 + 3 expansions (7 total)",
+          "verified_on": "2026-10-29",
+          "status": "verified"
+        },
+        "capabilities": {
+          "generator_control_ags": {
+            "value": false,
+            "source": "https://energylibrary.tesla.com/docs/Public/EnergyStorage/Powerwall/General/Compatibility/en-us/Powerwall-Compatibility-Table-EN.pdf 'Automatic generator control: No'",
+            "verified_on": "2026-10-29",
+            "status": "verified"
+          },
+          "generator_charges_battery": {
+            "value": false,
+            "source": "https://energylibrary.tesla.com/docs/Public/EnergyStorage/Powerwall/General/Compatibility/en-us/Powerwall-Compatibility-Table-EN.pdf 'Charging of Powerwall from upstream generator: No'; downstream gen via ATS/MTS only",
+            "verified_on": "2026-10-29",
+            "status": "verified"
+          },
+          "off_grid": {
+            "value": false,
+            "source": "https://energylibrary.tesla.com/docs/Public/EnergyStorage/Powerwall/General/Compatibility/en-us/Powerwall-Compatibility-Table-EN.pdf 'Off-grid system with no grid access: Not supported'",
+            "verified_on": "2026-10-29",
+            "status": "verified"
+          },
+          "closed_loop_battery_comms": {
+            "value": true,
+            "source": "integrated",
+            "verified_on": null,
+            "status": "unverified"
+          }
+        },
+        "cs_eligible_clc": {
+          "value": null,
+          "source": "NEEDS RESEARCH: CLC / Mass Save eligible list for PW3",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "price_cost": {
+          "value": null,
+          "source": "NEEDS RESEARCH: no Tesla pricing in package; Tesla sells via certified installers",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "note": "Engine consequence: on Tesla path, simulate() must NOT recharge the battery from the generator; generator serves load directly via transfer switch when battery is at reserve. Re-check docs before publishing."
+      }
+    },
+    "batteries": {
+      "eg4-wallmount-powerpro-14.3": {
+        "platform": "sol-ark",
+        "kwh": {
+          "value": 14.3,
+          "source": "S:460; CAT",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "usable_fraction": {
+          "value": 0.9,
+          "source": "owner accepted suggested pick 2026-10-30",
+          "verified_on": "2026-10-30",
+          "status": "verified"
+        },
+        "closed_loop": {
+          "value": "open-loop default",
+          "source": "Sol-Ark does not certify EG4 closed-loop; EG4 claims Sol-Ark CAN support https://eg4electronics.com/wp-content/uploads/2026/01/EG4-LifePower4-V2-Upgrades-external.pdf",
+          "verified_on": "2026-10-30",
+          "status": "verified"
+        },
+        "max_charge_w": {
+          "value": 10200,
+          "source": "DOC:130-140 (200 A)",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "price_cost": {
+          "value": 3250,
+          "source": "owner accepted suggested pick 2026-10-30 (per SKU)",
+          "verified_on": "2026-10-30",
+          "status": "verified"
+        },
+        "datasheet_url": {
+          "value": null,
+          "source": "not in package",
+          "verified_on": null,
+          "status": "unverified"
+        }
+      },
+      "eg4-wallmount-allweather-14.3": {
+        "platform": "sol-ark",
+        "kwh": {
+          "value": 14.3,
+          "source": "S:514",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "price_cost": {
+          "value": [
+            3800,
+            5000
+          ],
+          "source": "S:550-551",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "datasheet_url": {
+          "value": null,
+          "source": "not in package",
+          "verified_on": null,
+          "status": "unverified"
+        }
+      },
+      "eg4-lifepower4-v2-5.12": {
+        "platform": "sol-ark",
+        "kwh": {
+          "value": 5.12,
+          "source": "S:557",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "price_cost": {
+          "value": [
+            1100,
+            1300
+          ],
+          "source": "S:594-595",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "note": "design.html could not represent this SKU (audit 03 F3/F-32): engine must use per-SKU kWh",
+        "datasheet_url": {
+          "value": null,
+          "source": "not in package",
+          "verified_on": null,
+          "status": "unverified"
+        }
+      },
+      "pytes-ebox-48100r-x3": {
+        "platform": "sol-ark",
+        "kwh": {
+          "value": 15.36,
+          "source": "CAT",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "closed_loop": {
+          "value": true,
+          "source": "CAT; KB",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "price_cost": {
+          "value": 5849,
+          "source": "CAT (~$381/kWh); BOM G5 380.79",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "datasheet_url": {
+          "value": null,
+          "source": "not in package",
+          "verified_on": null,
+          "status": "unverified"
+        }
+      },
+      "homegrid-stackd-14.4": {
+        "platform": "sol-ark",
+        "kwh": {
+          "value": 14.4,
+          "source": "CAT",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "closed_loop": {
+          "value": true,
+          "source": "CAT",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "price_cost": {
+          "value": 10132,
+          "source": "CAT",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "datasheet_url": {
+          "value": null,
+          "source": "not in package",
+          "verified_on": null,
+          "status": "unverified"
+        }
+      },
+      "tesla-powerwall-3-expansion": {
+        "platform": "tesla",
+        "kwh": {
+          "value": 13.5,
+          "source": "NEEDS RESEARCH: expansion usable kWh assumed = PW3",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "price_cost": {
+          "value": null,
+          "source": "NEEDS RESEARCH",
+          "verified_on": null,
+          "status": "unverified"
+        }
+      }
+    },
+    "generators": {
+      "champion-201281": {
+        "type": "portable",
+        "max_kw": {
+          "value": 9.4,
+          "source": "D:120",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "rated_kw": {
+          "value": 7.5,
+          "source": "D:120; S:663",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "tank_gal": {
+          "value": 7.7,
+          "source": "D:120",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "auto_start": {
+          "value": false,
+          "source": "S",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "fuel_curve_gph": {
+          "value": {
+            "0.50": 0.45,
+            "0.75": 0.65,
+            "1.00": 0.9
+          },
+          "source": "S:672-674",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "propane_lbph_75": {
+          "value": 1.2,
+          "source": "S; D:120",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "price_cost": {
+          "value": [
+            700,
+            900
+          ],
+          "source": "S:677-678; D:120",
+          "verified_on": null,
+          "status": "unverified"
+        }
+      },
+      "duromax-xp13000hxt": {
+        "type": "portable",
+        "max_kw": {
+          "value": 13,
+          "source": "D:121",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "rated_kw": {
+          "value": 10.5,
+          "source": "D:121; CAT running_w",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "tank_gal": {
+          "value": 8.3,
+          "source": "D:121",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "auto_start": {
+          "value": false,
+          "source": "S",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "fuel_curve_gph": {
+          "value": {
+            "0.50": 0.55,
+            "0.75": 0.85,
+            "1.00": 1.2
+          },
+          "source": "S:653-655",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "propane_lbph_75": {
+          "value": 1.5,
+          "source": "S; D:121",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "price_cost": {
+          "value": 1600,
+          "source": "owner decision 2026-10-30",
+          "verified_on": "2026-10-30",
+          "status": "verified"
+        }
+      },
+      "duromax-xp15000hx": {
+        "type": "portable",
+        "max_kw": {
+          "value": 15,
+          "source": "D:122",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "rated_kw": {
+          "value": 12.5,
+          "source": "D:122",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "tank_gal": {
+          "value": 8.3,
+          "source": "D",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "auto_start": {
+          "value": false,
+          "source": "S",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "fuel_curve_gph": {
+          "value": {
+            "0.50": 0.65,
+            "0.75": 0.95,
+            "1.00": 1.3
+          },
+          "source": "S:634-636",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "propane_lbph_75": {
+          "value": 1.6,
+          "source": "S",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "price_cost": {
+          "value": [
+            1800,
+            2200
+          ],
+          "source": "S:639-640; D:122",
+          "verified_on": null,
+          "status": "unverified"
+        }
+      },
+      "duromax-xp16000ih": {
+        "type": "portable",
+        "max_kw": {
+          "value": 16,
+          "source": "D:123",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "rated_kw": {
+          "value": 13,
+          "source": "D:123",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "tank_gal": {
+          "value": 10,
+          "source": "S; D",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "auto_start": {
+          "value": false,
+          "source": "S:611",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "fuel_curve_gph": {
+          "value": {
+            "0.50": 0.7,
+            "0.75": 1.0,
+            "1.00": 1.4
+          },
+          "source": "S:615-617",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "propane_lbph_75": {
+          "value": 1.8,
+          "source": "S",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "price_cost": {
+          "value": [
+            2500,
+            3500
+          ],
+          "source": "S:620-621; D:123",
+          "verified_on": null,
+          "status": "unverified"
+        }
+      },
+      "genmax-gm10500xit": {
+        "type": "portable",
+        "auto_start": {
+          "value": true,
+          "source": "S:690 (2-wire start)",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "tank_gal": {
+          "value": 5.8,
+          "source": "S",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "fuel_curve_gph": {
+          "value": {
+            "0.50": 0.43,
+            "0.75": 0.65,
+            "1.00": 0.9
+          },
+          "source": "S:693-695 'estimated from runtime/tank'",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "price_cost": {
+          "value": [
+            1500,
+            2000
+          ],
+          "source": "S:701-702",
+          "verified_on": null,
+          "status": "unverified"
+        }
+      },
+      "honda-eu7000is": {
+        "type": "portable",
+        "rated_kw": {
+          "value": 5.5,
+          "source": "CAT",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "price_cost": {
+          "value": 5000,
+          "source": "CAT",
+          "verified_on": null,
+          "status": "unverified"
+        }
+      },
+      "generac-guardian-14kw": {
+        "type": "standby",
+        "auto_start": {
+          "value": true,
+          "source": "S",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "price_cost": {
+          "value": [
+            5000,
+            7000
+          ],
+          "source": "S:735-736 (unit only)",
+          "verified_on": null,
+          "status": "unverified"
+        }
+      },
+      "generac-guardian-22kw-installed": {
+        "type": "standby",
+        "auto_start": {
+          "value": true,
+          "source": "CAT",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "price_cost_installed": {
+          "value": 11500,
+          "source": "owner accepted suggested pick 2026-10-30",
+          "verified_on": "2026-10-30",
+          "status": "verified"
+        }
+      },
+      "generac-guardian-24kw": {
+        "type": "standby",
+        "auto_start": {
+          "value": true,
+          "source": "S",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "price_cost": {
+          "value": [
+            7000,
+            9000
+          ],
+          "source": "S:720-721 (unit only)",
+          "verified_on": null,
+          "status": "unverified"
+        }
+      }
+    },
+    "default_portable_generator": {
+      "value": "duromax-xp13000hxt",
+      "source": "owner decision 2026-10-30",
+      "verified_on": "2026-10-30",
+      "status": "verified"
+    },
+    "platforms": {
+      "sol-ark": {
+        "name": "Sol-Ark 12K/15K/18K hybrid",
+        "preferred": true,
+        "flags": {
+          "gen_autostart": {
+            "value": true,
+            "source": "KB (AGS)",
+            "verified_on": null,
+            "status": "verified"
+          },
+          "gen_charges_battery": {
+            "value": true,
+            "source": "KB",
+            "verified_on": null,
+            "status": "verified"
+          },
+          "off_grid_microgrid": {
+            "value": true,
+            "source": "KB",
+            "verified_on": null,
+            "status": "verified"
+          },
+          "max_continuous_w": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "surge": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "pv_max_w": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "battery_skus": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "grid_services_eligibility": {
+            "value": "per program eligible_equipment",
+            "source": "grid_services",
+            "verified_on": null,
+            "status": "verified"
+          },
+          "financeable": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "installer_cert_required": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "models": {
+            "value": [
+              "solark-12k-2p-n",
+              "solark-15k-2p-n",
+              "solark-18k-2p-n"
+            ],
+            "source": "catalog",
+            "verified_on": null,
+            "status": "verified"
+          }
+        }
+      },
+      "eg4": {
+        "name": "EG4 hybrid (e.g. 18kPV / FlexBOSS)",
+        "preferred": false,
+        "flags": {
+          "gen_autostart": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "gen_charges_battery": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "off_grid_microgrid": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "max_continuous_w": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "surge": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "pv_max_w": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "battery_skus": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "grid_services_eligibility": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "financeable": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "installer_cert_required": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          }
+        }
+      },
+      "tesla": {
+        "name": "Tesla Powerwall 3",
+        "preferred": false,
+        "flags": {
+          "gen_autostart": {
+            "value": false,
+            "source": "Tesla PW3 docs 2026-10-29",
+            "verified_on": null,
+            "status": "verified"
+          },
+          "gen_charges_battery": {
+            "value": false,
+            "source": "Tesla PW3 docs 2026-10-29",
+            "verified_on": null,
+            "status": "verified"
+          },
+          "off_grid_microgrid": {
+            "value": false,
+            "source": "Tesla PW3 docs 2026-10-29",
+            "verified_on": null,
+            "status": "verified"
+          },
+          "max_continuous_w": {
+            "value": 11500,
+            "source": "Tesla datasheet",
+            "verified_on": null,
+            "status": "verified"
+          },
+          "surge": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "pv_max_w": {
+            "value": 20000,
+            "source": "Tesla datasheet",
+            "verified_on": null,
+            "status": "verified"
+          },
+          "battery_skus": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "grid_services_eligibility": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "financeable": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "installer_cert_required": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "models": {
+            "value": [
+              "tesla-powerwall-3"
+            ],
+            "source": "catalog",
+            "verified_on": null,
+            "status": "verified"
+          }
+        }
+      },
+      "enphase": {
+        "name": "Enphase IQ8 + IQ Battery",
+        "preferred": false,
+        "flags": {
+          "gen_autostart": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "gen_charges_battery": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "off_grid_microgrid": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "max_continuous_w": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "surge": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "pv_max_w": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "battery_skus": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "grid_services_eligibility": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "financeable": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "installer_cert_required": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          }
+        }
+      },
+      "franklinwh": {
+        "name": "FranklinWH aPower/aGate",
+        "preferred": false,
+        "flags": {
+          "gen_autostart": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "gen_charges_battery": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "off_grid_microgrid": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "max_continuous_w": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "surge": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "pv_max_w": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "battery_skus": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "grid_services_eligibility": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "financeable": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          },
+          "installer_cert_required": {
+            "value": null,
+            "source": "NEEDS RESEARCH",
+            "verified_on": null,
+            "status": "unknown"
+          }
+        }
+      }
+    }
+  },
+  "prices": {
+    "inverter_cost": {
+      "solark-12k-2p-n": {
+        "value": 4350,
+        "source": "median of street: ShopSolar $4,299, Current Connected $4,350 (chargedreviews.com price log 2026-10-28); American Solar $4,750 (american-solar.com/sol-ark-12k-2p-n-12000w-120-240v-120-208v-220v/)",
+        "verified_on": "2026-10-30",
+        "status": "verified",
+        "dealer_estimate": "[redacted: private]"
+      },
+      "solark-15k-2p-n": {
+        "value": 5350,
+        "source": "median of street: Stella Volta $4,999, EVonomy $5,150 (evonomyenergy.com/product/15k-2p/), US Solar Supplier $5,526 (ussolarsupplier.com/products/sol-ark-15k-2p-n-15kw-hybrid-inverter), altE $7,071 (15K-2P)",
+        "verified_on": "2026-10-30",
+        "status": "verified",
+        "dealer_estimate": "[redacted: private]"
+      },
+      "solark-18k-2p-n": {
+        "value": 6050,
+        "source": "median of street: Stella Volta $5,829 (stellavolta.com/sol-ark-18k-2p-n-...), US Solar Supplier $6,267 (ussolarsupplier.com/products/sol-ark-18kw-18k-2p-n-hybrid-solar-inverter)",
+        "verified_on": "2026-10-30",
+        "status": "verified",
+        "dealer_estimate": "[redacted: private]"
+      },
+      "solark-12k-dual": {
+        "value": 8700,
+        "source": "2 x 12K street pick (fixes 1x price bug)",
+        "verified_on": "2026-10-30",
+        "status": "verified"
+      }
+    },
+    "solar_installed_per_kw": {
+      "value": [
+        2800,
+        3200
+      ],
+      "source": "PC solar_per_kw; PRC; BOM",
+      "verified_on": null,
+      "status": "unverified",
+      "note": "Only for estimates; design page says 'get local quote'"
+    },
+    "bos": {
+      "value": {
+        "small": 1000,
+        "medium": 1200,
+        "large": 1500
+      },
+      "source": "owner accepted suggested pick 2026-10-30",
+      "verified_on": "2026-10-30",
+      "status": "verified"
+    },
+    "nema_3r_enclosure": {
+      "value": 486,
+      "source": "CAT; UE",
+      "verified_on": null,
+      "status": "unverified",
+      "note": "D omits"
+    },
+    "permit": {
+      "value": 500,
+      "source": "owner accepted suggested pick 2026-10-30; interconnection fee is a separate line",
+      "verified_on": "2026-10-30",
+      "status": "verified"
+    },
+    "fuel_on_site": {
+      "value": 0,
+      "source": "D: line priced $0, customer buys locally",
+      "verified_on": null,
+      "status": "unverified"
+    }
+  },
+  "fees": {
+    "design_fee": {
+      "value": 0,
+      "source": "OWNER 2026-10-29 'free design for anyone'; D",
+      "verified_on": "2026-10-29",
+      "status": "verified",
+      "note": "Legacy candidates 1,500-2,500 (PC, E) and 2,000/2,500 (CAT) RETIRED -> conflict C11 resolved by owner"
+    },
+    "equipment_markup": {
+      "value": 0.0,
+      "source": "OWNER 2026-10-29 at cost, no markup",
+      "verified_on": "2026-10-29",
+      "status": "verified",
+      "note": "legacy markup retired for public; C12"
+    },
+    "labor_markup": {
+      "value": 0.0,
+      "source": "OWNER 2026-10-29",
+      "verified_on": "2026-10-29",
+      "status": "verified",
+      "note": "legacy markup retired for public; C12"
+    },
+    "permit_ready_package": {
+      "value": 495,
+      "source": "OWNER; D PLANS.permit",
+      "verified_on": "2026-10-29",
+      "status": "verified"
+    },
+    "remote_commissioning": {
+      "value": 395,
+      "source": "OWNER; D PLANS.commission",
+      "verified_on": "2026-10-29",
+      "status": "verified"
+    },
+    "turnkey_install_fee": {
+      "value": null,
+      "source": "OWNER: 'flat posted install fee' - schedule not defined",
+      "verified_on": null,
+      "status": "unverified",
+      "note": "NEEDS DECISION D2; engine shows 'install: quoted' until set"
+    },
+    "turnkey_service_area": {
+      "value": "Cape Cod, the Islands incl. Nantucket, and SouthCoast",
+      "source": "owner decision 2026-10-30 (C28)",
+      "verified_on": "2026-10-30",
+      "status": "verified"
+    }
+  },
+  "design_rules": {
+    "load_tiers": {
+      "emergency": {
+        "continuous_kw": {
+          "value": 0.8,
+          "source": "E:2971 Emergency preset",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "kwh_day": {
+          "value": 19.2,
+          "source": "derived 0.8x24",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "status_note": "Kept as separate tier per owner decision (b)"
+      },
+      "bare_minimum": {
+        "kwh_day": {
+          "value": 6.5,
+          "source": "OWNER default (b); D:125-134 lights 3.5 + fridge 1.5 + Wi-Fi 1.5",
+          "verified_on": null,
+          "status": "unverified",
+          "note": "status: owner default, open"
+        },
+        "adders_kwh_day": {
+          "value": {
+            "well": 1.5,
+            "sump": 1.0,
+            "heat_zone_minisplit": 5.0
+          },
+          "source": "D:125-134",
+          "verified_on": null,
+          "status": "unverified"
+        }
+      },
+      "critical": {
+        "duty_factor": {
+          "value": 0.55,
+          "source": "E:1734 'essentials'",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "note": "user-selected appliance bundle"
+      },
+      "essential": {
+        "duty_factor": {
+          "value": 0.4,
+          "source": "E:1734 'comfortable'",
+          "verified_on": null,
+          "status": "unverified"
+        }
+      },
+      "whole_home": {
+        "duty_factor": {
+          "value": 0.35,
+          "source": "E:1734",
+          "verified_on": null,
+          "status": "unverified"
+        }
+      }
+    },
+    "appliances": {
+      "value": {
+        "lights": [
+          800,
+          3.5
+        ],
+        "fridge": [
+          200,
+          1.5
+        ],
+        "wifi_tv": [
+          300,
+          1.5
+        ],
+        "well": [
+          1500,
+          1.5
+        ],
+        "sump": [
+          800,
+          1.0
+        ],
+        "minisplit": [
+          2000,
+          5.0
+        ],
+        "central_ac_hp": [
+          4000,
+          10.0
+        ],
+        "water_heater": [
+          4500,
+          4.0
+        ],
+        "washer_dryer": [
+          5500,
+          3.0
+        ],
+        "ev_l2": [
+          7200,
+          10.0
+        ]
+      },
+      "source": "E:1307-1323 [peak_W, kWh/day]",
+      "verified_on": null,
+      "status": "unverified"
+    },
+    "battery": {
+      "gen_start_soc": {
+        "value": 0.2,
+        "source": "owner accepted suggested pick 2026-10-30",
+        "verified_on": "2026-10-30",
+        "status": "verified"
+      },
+      "gen_stop_soc": {
+        "value": 0.9,
+        "source": "S:46-49; D",
+        "verified_on": null,
+        "status": "unverified",
+        "note": "AGS text says 100% (F-18) - fix copy"
+      },
+      "min_soc": {
+        "value": 0.1,
+        "source": "S:50",
+        "verified_on": null,
+        "status": "unverified"
+      },
+      "outage_start_soc": {
+        "value": 0.95,
+        "source": "E",
+        "verified_on": null,
+        "status": "unverified"
+      },
+      "round_trip_eff": {
+        "value": 0.9,
+        "source": "D chargeEff",
+        "verified_on": null,
+        "status": "unverified"
+      },
+      "outage_targets_hours": {
+        "value": {
+          "essential": 12,
+          "optimal_default": 24,
+          "maximum": 48
+        },
+        "source": "S:116-145",
+        "verified_on": null,
+        "status": "unverified"
+      },
+      "min_units_serious": {
+        "value": 2,
+        "source": "S:1125",
+        "verified_on": null,
+        "status": "unverified"
+      }
+    },
+    "optimizer": {
+      "hurdle_marginal_payback_yrs": {
+        "value": 8,
+        "source": "S:1365-1431",
+        "verified_on": null,
+        "status": "unverified",
+        "note": "Exceeds 5-yr CS lock (F-25) - needs-decision D4"
+      },
+      "include_install_bos_in_unit_cost": {
+        "value": true,
+        "source": "NEW (F-25)",
+        "verified_on": null,
+        "status": "unverified"
+      }
+    },
+    "generator": {
+      "sizing": {
+        "value": "largest gen with rated_kw <= gen_port_max_w x 1.1",
+        "source": "S:1172-1180",
+        "verified_on": null,
+        "status": "unverified"
+      },
+      "default_type": {
+        "value": "portable",
+        "source": "OWNER 2026-10-29",
+        "verified_on": "2026-10-29",
+        "status": "verified"
+      },
+      "charge_load_fraction": {
+        "value": 0.75,
+        "source": "D genLoad; DOC:26",
+        "verified_on": null,
+        "status": "unverified"
+      },
+      "fuel_curve_interpolation": {
+        "value": "linear between 0.25/0.50/0.75/1.00 points; replaces step function",
+        "source": "NEW (fixes F-29)",
+        "verified_on": null,
+        "status": "unverified"
+      },
+      "runtime_target": {
+        "value": null,
+        "source": "REMOVED: runtime is an output of simulate() per owner decision (a)",
+        "verified_on": "2026-10-29",
+        "status": "verified"
+      }
+    },
+    "fuel": {
+      "autonomy_days_default": {
+        "value": 7,
+        "source": "OWNER; D FUEL.days",
+        "verified_on": "2026-10-29",
+        "status": "verified"
+      },
+      "min_gal": {
+        "value": 10,
+        "source": "D:206",
+        "verified_on": null,
+        "status": "unverified"
+      },
+      "can_gal": {
+        "value": 5,
+        "source": "D:206",
+        "verified_on": null,
+        "status": "unverified"
+      },
+      "propane_tank_lb": {
+        "value": 20,
+        "source": "D",
+        "verified_on": null,
+        "status": "unverified"
+      },
+      "stabilizer": {
+        "value": true,
+        "source": "OWNER",
+        "verified_on": null,
+        "status": "unverified"
+      }
+    },
+    "inverter_select": {
+      "peak_thresholds_w": {
+        "value": {
+          "12K": 9000,
+          "15K": 13500,
+          "18K": 16000
+        },
+        "source": "E:1656-1681",
+        "verified_on": null,
+        "status": "unverified",
+        "note": "15K threshold exceeds 12 kW battery-side (F-22); forced 12K->15K upgrade REMOVED"
+      },
+      "default_platform": {
+        "value": "sol-ark",
+        "source": "OWNER decision (c)",
+        "verified_on": "2026-10-29",
+        "status": "verified"
+      },
+      "default_model": {
+        "value": "solark-15k-2p-n",
+        "source": "owner decision 2026-10-30: 15K default (rapid recharge with oversized generator); 12K optional for <=9 kW loads/smaller gen or CLC CS eligibility",
+        "verified_on": "2026-10-30",
+        "status": "verified"
+      },
+      "optional_models": {
+        "value": {
+          "solark-12k-2p-n": "loads <= 9 kW, smaller generator, or CLC Connected Solutions eligibility"
+        },
+        "source": "owner decision 2026-10-30",
+        "verified_on": "2026-10-30",
+        "status": "verified"
+      }
+    }
+  },
+  "policy": {
+    "publish_rule": "refuse any value with status=conflict; flag unverified on page",
+    "licensed_review_gate": "All outputs preliminary; PE/licensed electrician review required before permit or install",
+    "off_cape_caveat": {
+      "value": "confirm locally",
+      "source": "OWNER",
+      "verified_on": "2026-10-29",
+      "status": "verified"
+    },
+    "email_gate": {
+      "value": {
+        "cape": "required",
+        "off_cape": "optional"
+      },
+      "source": "OWNER",
+      "verified_on": "2026-10-29",
+      "status": "verified"
+    },
+    "cs_pending_display": {
+      "value": "show CS as 'pending eligibility', excluded from payback/NPV",
+      "source": "NEW per F-2 / owner request",
+      "verified_on": "2026-10-29",
+      "status": "verified"
+    },
+    "dealer_claim": {
+      "value": null,
+      "source": "needs-decision: 'Sol-Ark Authorized Dealer' wording (audit \u00a76.5)",
+      "verified_on": null,
+      "status": "unverified"
+    },
+    "private_overlay": "aps-config.private.json merged at runtime; never committed",
+    "platform_selection": {
+      "value": "hard filter (resiliency constraints, all flags known-true where required) -> score by lifetime cost net of region grid-services income, NPV, financeability; preferred platform wins ties within policy.preferred_tie_band; every candidate gets pick/reject reasons",
+      "source": "owner 2026-10-29",
+      "verified_on": null,
+      "status": "verified"
+    },
+    "preferred_tie_band": {
+      "value": 0.05,
+      "source": "NEEDS DECISION (proposal: Sol-Ark wins if within 5% of best score)",
+      "verified_on": null,
+      "status": "unverified"
+    },
+    "unknown_flag_rule": {
+      "value": "a required capability flag that is unknown -> candidate shown 'needs research', not recommended",
+      "source": "NEW",
+      "verified_on": null,
+      "status": "verified"
+    },
+    "region_degrade": {
+      "value": "field confidence 'none' or conflict -> excluded; finance shown only if tariff confidence >= medium; low-confidence lines labelled 'auto-sourced, unverified'; resilience always shown",
+      "source": "owner R3 2026-10-30",
+      "verified_on": null,
+      "status": "verified"
+    },
+    "maintenance": {
+      "value": {
+        "proposers": [
+          "Technical bot: catalog, capability flags, eligible-equipment lists",
+          "Financial bot: tariffs, incentives, NEM, grid services"
+        ],
+        "approval": "Bill approves each sourced diff before status 'verified'",
+        "expiry_days": 180,
+        "on_expiry": "verified -> auto_sourced/unverified, flagged in outputs",
+        "diff_format": "PR against config with source URL + retrieved date per value"
+      },
+      "source": "owner decision 2026-10-30 (approved)",
+      "verified_on": "2026-10-30",
+      "status": "verified"
+    },
+    "refresh_cadence": {
+      "value": {
+        "urdb_tariffs": "weekly",
+        "dsire_incentives_nem": "weekly",
+        "territory_hifld": "quarterly",
+        "territory_eia861": "annual (Oct)",
+        "reliability_eia861": "annual",
+        "outages_eaglei": "annual",
+        "pvwatts/nsrdb": "static, cache",
+        "federal_tax": "quarterly + on law change",
+        "utility_dr_vpp": "quarterly",
+        "iso_rto_programs": "quarterly",
+        "interconnection": "semiannual",
+        "ahj_permitting": "monthly",
+        "catalog datasheets": "on vendor release + 180-d"
+      },
+      "source": "owner-approved maintenance",
+      "verified_on": "2026-10-30",
+      "status": "verified"
+    },
+    "finance_paths": {
+      "value": {
+        "cash": "on",
+        "loan": "on",
+        "lease_tpo": {
+          "enabled": true,
+          "48E_eligibility": "unverified",
+          "note": "owner/third party claims 48E; homeowner pays lease/PPA"
+        }
+      },
+      "source": "owner R4 2026-10-30",
+      "verified_on": "2026-10-30",
+      "status": "verified"
+    },
+    "consent_text": {
+      "value": "Yes, send my design and contact details to Antifragile Power Systems (hello@antifragilepower.com) so they can contact me about a firm quote or financing. I can ask to have my information deleted at any time. My information will not be sold.",
+      "source": "owner approved as drafted 2026-10-30 (C1)",
+      "verified_on": "2026-10-30",
+      "status": "verified",
+      "version": "consent-v1"
+    },
+    "lead_handoff": {
+      "value": {
+        "label": "Get a firm quote / financing",
+        "email": "hello@antifragilepower.com"
+      },
+      "source": "owner R6 2026-10-30",
+      "verified_on": "2026-10-30",
+      "status": "verified"
+    }
+  },
+  "grid_services": {
+    "_schema": {
+      "type": "capacity_dr | vpp | capacity_market | tou_arbitrage | demand_charge | export_credit",
+      "pay_basis": "$/kW-season | $/kW-yr | $/kWh | $/event"
+    },
+    "programs": {
+      "cs-clc": {
+        "id": "cs-clc",
+        "name": "Connected Solutions (Cape Light Compact)",
+        "type": "capacity_dr",
+        "region_packs": [
+          "ma-clc"
+        ],
+        "pay_basis": "$/kW-season",
+        "rate": {
+          "value": 275,
+          "source": "L:11 'confirmed Jul 2026'; S:58; E:1087; CAT",
+          "verified_on": "2026-07",
+          "status": "verified"
+        },
+        "event_hours": {
+          "value": 3,
+          "source": "S:59; E:1088; D:183; CAT",
+          "verified_on": null,
+          "status": "verified",
+          "note": "FPM implies 2.8 / landing 5 kW per battery - retired, see C15"
+        },
+        "season": {
+          "value": "Jun-Sep",
+          "source": "S:60",
+          "verified_on": null,
+          "status": "verified"
+        },
+        "eligible_equipment": {
+          "value": {
+            "solark-12k-2p-n": true,
+            "solark-8k": true,
+            "solark-5k": true,
+            "solark-15k-2p-n": "pending_eligibility",
+            "solark-18k-2p-n": "pending_eligibility",
+            "tesla-powerwall-3": "unknown"
+          },
+          "source": "KB CLC page 2026-09-09",
+          "verified_on": "2026-09-09",
+          "status": "verified"
+        },
+        "enrollment_cap": {
+          "value": null,
+          "source": "NEEDS RESEARCH",
+          "verified_on": null,
+          "status": "unknown"
+        },
+        "lock_in_years": {
+          "value": 5,
+          "source": "S:61",
+          "verified_on": null,
+          "status": "verified"
+        },
+        "performance_formula": {
+          "value": "paid_kw = min(batt_side_kw*n_inv, usable_kwh/event_hours) * rate",
+          "source": "S:1342",
+          "verified_on": null,
+          "status": "verified"
+        },
+        "stacking_rules": {
+          "value": null,
+          "source": "NEEDS RESEARCH",
+          "verified_on": null,
+          "status": "unknown"
+        },
+        "winter_adder": {
+          "value": null,
+          "source": "KB 'possible ~$50/kW', not on CLC page",
+          "verified_on": null,
+          "status": "unverified"
+        }
+      },
+      "cs-ma-other": {
+        "id": "cs-ma-other",
+        "name": "Connected Solutions (Mass Save other utilities)",
+        "type": "capacity_dr",
+        "region_packs": [
+          "ma-other"
+        ],
+        "pay_basis": "$/kW-season",
+        "rate": {
+          "value": 225,
+          "source": "owner accepted suggested pick 2026-10-30: flagged estimate, excluded from payback",
+          "verified_on": "2026-10-30",
+          "status": "unverified"
+        },
+        "event_hours": null,
+        "season": null,
+        "eligible_equipment": null,
+        "enrollment_cap": {
+          "value": null,
+          "source": "NEEDS RESEARCH",
+          "verified_on": null,
+          "status": "unknown"
+        },
+        "lock_in_years": null,
+        "performance_formula": {
+          "value": "paid_kw = min(batt_side_kw*n_inv, usable_kwh/event_hours) * rate",
+          "source": "S:1342",
+          "verified_on": null,
+          "status": "verified"
+        },
+        "stacking_rules": {
+          "value": null,
+          "source": "NEEDS RESEARCH",
+          "verified_on": null,
+          "status": "unknown"
+        }
+      },
+      "cs-ma-ci": {
+        "id": "cs-ma-ci",
+        "name": null,
+        "type": "capacity_dr",
+        "region_packs": [
+          "commercial-ci-ma"
+        ],
+        "pay_basis": null,
+        "rate": {
+          "value": null,
+          "source": "owner accepted suggested pick 2026-10-30: verify (candidates 200 / 275); excluded from payback",
+          "verified_on": "2026-10-30",
+          "status": "unverified"
+        },
+        "event_hours": null,
+        "season": null,
+        "eligible_equipment": null,
+        "enrollment_cap": {
+          "value": null,
+          "source": "NEEDS RESEARCH",
+          "verified_on": null,
+          "status": "unknown"
+        },
+        "lock_in_years": null,
+        "performance_formula": {
+          "value": "paid_kw = min(batt_side_kw*n_inv, usable_kwh/event_hours) * rate",
+          "source": "S:1342",
+          "verified_on": null,
+          "status": "verified"
+        },
+        "stacking_rules": {
+          "value": null,
+          "source": "NEEDS RESEARCH",
+          "verified_on": null,
+          "status": "unknown"
+        }
+      },
+      "tou-arbitrage-generic": {
+        "id": "tou-arbitrage-generic",
+        "name": null,
+        "type": "tou_arbitrage",
+        "region_packs": [],
+        "pay_basis": "$/kWh",
+        "rate": {
+          "value": null,
+          "source": "from pack retail_tariff.tou",
+          "verified_on": null,
+          "status": "unknown"
+        },
+        "event_hours": null,
+        "season": null,
+        "eligible_equipment": null,
+        "enrollment_cap": {
+          "value": null,
+          "source": "NEEDS RESEARCH",
+          "verified_on": null,
+          "status": "unknown"
+        },
+        "lock_in_years": null,
+        "performance_formula": {
+          "value": "paid_kw = min(batt_side_kw*n_inv, usable_kwh/event_hours) * rate",
+          "source": "S:1342",
+          "verified_on": null,
+          "status": "verified"
+        },
+        "stacking_rules": {
+          "value": null,
+          "source": "NEEDS RESEARCH",
+          "verified_on": null,
+          "status": "unknown"
+        }
+      }
+    }
+  },
+  "data_layer": {
+    "_note": "Access methods and limits verified on 2026-10-30. Keys in secrets store, never in config.",
+    "sources": {
+      "geocode": {
+        "use": "address->lat/lon,county FIPS",
+        "source": "US Census Geocoder (geocoding.geo.census.gov)",
+        "license": "public domain, free",
+        "limits": "needs-research",
+        "refresh": "live",
+        "status": "unverified"
+      },
+      "territory_hifld": {
+        "use": "lat/lon -> utility (EIA id) polygon",
+        "source": "HIFLD Electric Retail Service Territories, hifld.publicenvirodata.org (HIFLD Next/PEDP, updated 2026-08-17); archived ICPSR doi:10.3886/E239091V2",
+        "license": "public, free download GeoJSON/Shapefile",
+        "limits": "bulk file; host locally (PostGIS)",
+        "refresh": "quarterly",
+        "status": "verified",
+        "verified_on": "2026-10-30",
+        "note": "Original HIFLD Open portal deactivated 2025-08-26; mirror is PEDP"
+      },
+      "territory_eia861": {
+        "use": "utility x county service list, utility type, ownership; cross-check of HIFLD",
+        "source": "EIA-861 Service_Territory file, eia.gov/electricity/data/eia861 (2025 final released 2026-10-07)",
+        "license": "public domain",
+        "limits": "bulk zip",
+        "refresh": "annual (Oct)",
+        "status": "verified",
+        "verified_on": "2026-10-30"
+      },
+      "urdb_tariffs": {
+        "use": "retail tariff structure (TOU, tiers, demand, fixed, sell/export rate fields) by EIA id or lat/lon",
+        "source": "OpenEI URDB API api.openei.org/utility_rates?version=latest (7)",
+        "license": "CC0/public, free key",
+        "limits": "max 500 records per call; detail=full may time out; key rate limit needs-research",
+        "refresh": "weekly delta pull; rates expire on 'enddate'",
+        "status": "verified",
+        "verified_on": "2026-10-30",
+        "note": "NLR utility_rates v3 (avg rates) is 2012 data, frozen - fallback only"
+      },
+      "eia_avg_price": {
+        "use": "fallback avg $/kWh by utility/state when URDB missing",
+        "source": "EIA-861 Sales_Ult_Cust; EIA API v2 retail-sales",
+        "license": "public domain",
+        "limits": "EIA API key free",
+        "refresh": "monthly (state) / annual (utility)",
+        "status": "verified",
+        "verified_on": "2026-10-30"
+      },
+      "eia861_net_metering": {
+        "use": "which utilities have NEM customers/capacity (presence signal only, not the rules)",
+        "source": "EIA-861 Net_Metering file",
+        "license": "public domain",
+        "refresh": "annual",
+        "status": "verified",
+        "verified_on": "2026-10-30"
+      },
+      "dsire_incentives_nem": {
+        "use": "state/utility incentives, NEM and interconnection policies, ZIP association",
+        "source": "DSIRE public program pages (dsireusa.org) + state PUC dockets/tariffs; NO paid DSIRE API (owner R1)",
+        "license": "public pages; respect robots/terms; cite DSIRE",
+        "refresh": "weekly bot crawl, Bill approves",
+        "status": "verified",
+        "verified_on": "2026-10-30",
+        "note": "Qualitative text: rules parsed by Financial bot -> auto_sourced, low confidence until reviewed"
+      },
+      "federal_tax": {
+        "use": "federal credit status",
+        "source": "IRS OBBB FAQ (irs.gov/newsroom) - 25D ended for expenditures after 2025-12-31; 48E/45Y continue for business/third-party-owned storage (NYSEIA summary)",
+        "license": "public",
+        "refresh": "on law change + quarterly check",
+        "status": "verified",
+        "verified_on": "2026-10-30"
+      },
+      "pvwatts": {
+        "use": "hourly AC output by lat/lon (TMY)",
+        "source": "PVWatts v8 developer.nlr.gov/api/pvwatts/v8.json (NREL renamed National Laboratory of the Rockies; developer.nrel.gov retired 2026-05-29)",
+        "license": "free key",
+        "limits": "1,000 req/hour/key (all NLR APIs); DEMO_KEY 30/h, 50/day",
+        "refresh": "cache per lat/lon grid cell; static",
+        "status": "verified",
+        "verified_on": "2026-10-30"
+      },
+      "nsrdb_storm_psh": {
+        "use": "storm-day PSH: worst consecutive 3/5/7-day GHI windows (P10) from multi-year NSRDB, Dec-Feb",
+        "source": "NSRDB via developer.nlr.gov/docs/solar/nsrdb",
+        "license": "free key",
+        "limits": "2,000 req/day, 1 req/2 s, 20 concurrent",
+        "refresh": "one-time per grid cell; yearly append",
+        "status": "verified",
+        "verified_on": "2026-10-30"
+      },
+      "reliability_eia861": {
+        "use": "utility SAIDI/SAIFI with/without major event days -> default outage target",
+        "source": "EIA-861 Reliability file (2025 final)",
+        "license": "public domain",
+        "refresh": "annual",
+        "status": "verified",
+        "verified_on": "2026-10-30"
+      },
+      "outages_eaglei": {
+        "use": "county outage history 2014-2025 (15-min) -> P90 outage duration, event frequency",
+        "source": "ORNL EAGLE-I: openenergyhub.ornl.gov dataset eaglei_outages_2014; 2025 via doi.ccs.ornl.gov",
+        "license": "public (ORNL), bulk",
+        "refresh": "annual",
+        "status": "verified",
+        "verified_on": "2026-10-30"
+      },
+      "iso_rto_programs": {
+        "use": "wholesale DR/capacity eligibility & prices for aggregated DER",
+        "source": "ISO-NE, PJM, NYISO, CAISO, ERCOT, MISO, SPP market pages / data portals (FERC Order 2222 DER aggregation)",
+        "license": "public pages; some data APIs need registration",
+        "refresh": "quarterly manual + bot",
+        "status": "needs-research",
+        "note": "No single national API; mostly via aggregators/utilities, not direct for homeowners"
+      },
+      "utility_dr_vpp": {
+        "use": "utility BYOB/DR/VPP programs ($/kW, events, eligible equipment, caps)",
+        "source": "utility program pages; DSIRE (partial); EIA-861 Demand_Response file (presence/enrollment signal only)",
+        "license": "public pages",
+        "refresh": "quarterly bot crawl + Bill approval",
+        "status": "needs-research",
+        "note": "GAP: no national machine-readable source for program terms or eligible-equipment lists",
+        "seeding": "largest utilities by EIA-861 customer count first, plus user-reported programs (status unverified until Bill approves) (owner R2)"
+      },
+      "interconnection": {
+        "use": "size limits, fees, timelines, export limits",
+        "source": "DSIRE interconnection policies; state PUC rules; utility tariff pages",
+        "license": "public",
+        "refresh": "semiannual",
+        "status": "needs-research",
+        "note": "GAP: no national structured dataset"
+      },
+      "ahj_permitting": {
+        "use": "AHJ by address, code cycle (NEC year), instant permit availability",
+        "source": "SolarAPP+ jurisdiction table gosolarapp.org/where-is-solarapp-available (350+ jurisdictions; Storage-Only in ~20); Census places/county subdivisions for AHJ name",
+        "license": "public page",
+        "refresh": "monthly",
+        "status": "verified",
+        "verified_on": "2026-10-30",
+        "note": "GAP: no national AHJ fee/NEC-year dataset"
+      }
+    }
+  },
+  "regions": {
+    "resolver": {
+      "zip_parse": {
+        "value": "explicit zip field; else last 5-digit token after a 2-letter state; never a leading house number",
+        "source": "spec \u00a79 (fixes F-7)",
+        "verified_on": null,
+        "status": "verified"
+      },
+      "pipeline": {
+        "value": "address -> Census geocode (lat/lon, FIPS) -> HIFLD polygon (EIA id; EIA-861 county list cross-check; multiple = ask user) -> baseline pack(state, eia_id) -> overlay curated override if present",
+        "source": "owner 2026-10-30",
+        "verified_on": "2026-10-30",
+        "status": "verified"
+      }
+    },
+    "baseline": {
+      "_note": "Generated nightly/weekly for EVERY EIA-861 utility x state (~3,000 utilities). Every field status 'auto_sourced' with confidence.",
+      "status_values": [
+        "verified",
+        "auto_sourced",
+        "unverified",
+        "conflict",
+        "unknown"
+      ],
+      "confidence": {
+        "high": "curated override or Bill-approved within 180 d",
+        "medium": "auto_sourced from structured federal data (URDB tariff current, PVWatts, EIA reliability)",
+        "low": "auto_sourced from parsed text (DSIRE, program pages) or fallback averages",
+        "none": "missing -> degrade"
+      },
+      "fields": {
+        "state": "geocode",
+        "utility": "territory_hifld+territory_eia861",
+        "climate.psh_average": "pvwatts",
+        "climate.psh_storm": "nsrdb_storm_psh",
+        "retail_tariff": "urdb_tariffs (fallback eia_avg_price, low)",
+        "net_metering": "dsire_incentives_nem + urdb sell rates (+eia861_net_metering presence)",
+        "incentives": "dsire_incentives_nem + federal_tax",
+        "grid_services": "utility_dr_vpp + iso_rto_programs (bot-parsed, low)",
+        "interconnection": "interconnection",
+        "ahj": "ahj_permitting",
+        "resiliency_defaults": "reliability_eia861 + outages_eaglei"
+      }
+    },
+    "overrides": {
+      "ma-clc": {
+        "match": {
+          "state": "MA",
+          "utility": "cape-light-compact",
+          "zip_rule": {
+            "value": "02532-02675 excluding 02538,02558,02571,02576 (Wareham) and 02554,02564,02584 (Nantucket)",
+            "source": "L:8-12; L:21",
+            "verified_on": null,
+            "status": "unverified"
+          }
+        },
+        "status": {
+          "value": "first full pack",
+          "source": "owner",
+          "verified_on": null,
+          "status": "verified"
+        },
+        "climate": {
+          "psh_annual": {
+            "value": 4.3,
+            "source": "E:1127-1146 defaultPsh",
+            "verified_on": null,
+            "status": "unverified"
+          },
+          "psh_monthly": {
+            "value": [
+              3.0,
+              3.8,
+              4.4,
+              4.8,
+              5.2,
+              5.6,
+              5.5,
+              5.2,
+              4.6,
+              3.7,
+              2.8,
+              2.5
+            ],
+            "source": "E:1127-1146",
+            "verified_on": null,
+            "status": "unverified"
+          },
+          "psh_winter": {
+            "value": 3.1,
+            "source": "E",
+            "verified_on": null,
+            "status": "unverified"
+          },
+          "psh_summer": {
+            "value": 5.4,
+            "source": "E",
+            "verified_on": null,
+            "status": "unverified"
+          },
+          "storm_psh": {
+            "value": {
+              "blizzard": 0.5,
+              "storm_design": 1.0,
+              "light_overcast": 1.5
+            },
+            "source": "E SOLAR.stormPsh",
+            "verified_on": null,
+            "status": "unverified",
+            "note": "Fuel headline MUST use storm_design, not annual (audit F-4)"
+          },
+          "outage_duration_cdf": {
+            "value": {
+              "4h": 0.8,
+              "8h": 0.9,
+              "12h": 0.92,
+              "24h": 0.95,
+              "48h": 0.98,
+              "72h": 0.99,
+              "168h": 0.999
+            },
+            "source": "S:91-99 (EIA 2014-2024, US)",
+            "verified_on": null,
+            "status": "unverified"
+          },
+          "cape_outage_factor": {
+            "value": 1.5,
+            "source": "S:104 (declared, never applied - F-34)",
+            "verified_on": null,
+            "status": "unverified"
+          }
+        },
+        "retail_tariff": {
+          "rate_per_kwh": {
+            "value": 0.315,
+            "source": "owner accepted suggested pick 2026-10-30 (per utility; Feb 2026 bill)",
+            "verified_on": "2026-10-30",
+            "status": "verified"
+          },
+          "escalation": {
+            "value": 0.03,
+            "source": "owner accepted suggested pick 2026-10-30 + sensitivity",
+            "verified_on": "2026-10-30",
+            "status": "verified"
+          },
+          "tou": {
+            "value": null,
+            "source": "NEEDS RESEARCH (Eversource/NSTAR tariffs)",
+            "verified_on": null,
+            "status": "unknown"
+          }
+        },
+        "net_metering": {
+          "export_credit_per_kwh": {
+            "value": "retail",
+            "source": "owner accepted suggested pick 2026-10-30",
+            "verified_on": "2026-10-30",
+            "status": "verified"
+          }
+        },
+        "interconnection": {
+          "value": null,
+          "source": "NEEDS RESEARCH: Eversource ISA process; F-22 interconnection risk flags only",
+          "verified_on": null,
+          "status": "unknown"
+        },
+        "ahj": {
+          "value": "town building dept (per town)",
+          "source": "D:288 'electrician confirms'",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "incentives": {
+          "ma_state_credit": {
+            "value": {
+              "pct": 0.15,
+              "cap": 1000,
+              "scope": "MA only"
+            },
+            "source": "owner accepted suggested pick 2026-10-30",
+            "verified_on": "2026-10-30",
+            "status": "verified"
+          },
+          "smart": {
+            "value": null,
+            "source": "owner accepted suggested pick 2026-10-30: disabled until verified",
+            "verified_on": "2026-10-30",
+            "status": "unverified"
+          },
+          "heat_loan": {
+            "value": {
+              "rate": 0.0,
+              "term_months": 84,
+              "cap": 25000
+            },
+            "source": "FSR; FPM; LAND",
+            "verified_on": null,
+            "status": "unverified",
+            "note": "battery-only eligibility unconfirmed"
+          },
+          "eversource_battery_rebate": {
+            "value": 500,
+            "source": "FPM; FSR; LAND",
+            "verified_on": null,
+            "status": "unverified"
+          }
+        },
+        "grid_services": [
+          "cs-clc"
+        ],
+        "decisions": [
+          "P1 default Sol-Ark model for CLC (12K eligible vs 15K/18K pending)",
+          "P2 Nantucket in/out of turnkey area (C28)"
+        ]
+      },
+      "ma-other": {
+        "match": {
+          "state": "MA",
+          "utility": "*"
+        },
+        "status": {
+          "value": "override seed (carries MA conflicts)",
+          "source": "owner",
+          "verified_on": "2026-10-30",
+          "status": "unverified"
+        },
+        "retail_tariff": {
+          "rate_per_kwh": {
+            "value": 0.315,
+            "source": "owner accepted suggested pick 2026-10-30 (per utility; Feb 2026 bill)",
+            "verified_on": "2026-10-30",
+            "status": "verified"
+          },
+          "escalation": {
+            "value": 0.03,
+            "source": "owner accepted suggested pick 2026-10-30 + sensitivity",
+            "verified_on": "2026-10-30",
+            "status": "verified"
+          }
+        },
+        "net_metering": {
+          "export_credit_per_kwh": {
+            "value": "retail",
+            "source": "owner accepted suggested pick 2026-10-30",
+            "verified_on": "2026-10-30",
+            "status": "verified"
+          }
+        },
+        "incentives": {
+          "ma_state_credit": {
+            "value": {
+              "pct": 0.15,
+              "cap": 1000,
+              "scope": "MA only"
+            },
+            "source": "owner accepted suggested pick 2026-10-30",
+            "verified_on": "2026-10-30",
+            "status": "verified"
+          },
+          "smart": {
+            "value": null,
+            "source": "owner accepted suggested pick 2026-10-30: disabled until verified",
+            "verified_on": "2026-10-30",
+            "status": "unverified"
+          }
+        },
+        "grid_services": [
+          "cs-ma-other"
+        ],
+        "climate": {
+          "value": null,
+          "source": "PVWatts; storm PSH unknown",
+          "verified_on": null,
+          "status": "unknown"
+        }
+      },
+      "commercial-ci-ma": {
+        "match": {
+          "state": "MA",
+          "customer": "C&I"
+        },
+        "status": {
+          "value": "stub",
+          "source": "NEEDS RESEARCH",
+          "verified_on": null,
+          "status": "unknown"
+        },
+        "grid_services": [
+          "cs-ma-ci"
+        ]
+      }
+    },
+    "_federal": {
+      "25D": {
+        "value": "expired for expenditures after 2025-12-31; never promise",
+        "source": "IRS OBBB FAQ irs.gov/newsroom; 26 USC 25D(h)",
+        "verified_on": "2026-10-30",
+        "status": "verified"
+      },
+      "48E_commercial": {
+        "value": 0.3,
+        "source": "S commercial; audit 01 \u00a74.11",
+        "verified_on": null,
+        "status": "unverified"
+      },
+      "residential_macrs": {
+        "value": null,
+        "source": "E22: must not be shown to homeowners",
+        "verified_on": null,
+        "status": "verified"
+      },
+      "48E_third_party_storage": {
+        "value": "may apply to third-party-owned (lease/PPA) or business storage",
+        "source": "NYSEIA OBBBA summary; IRS",
+        "verified_on": "2026-10-30",
+        "status": "unverified"
+      }
+    },
+    "climate_defaults": {
+      "pvwatts": {
+        "source": {
+          "value": "NREL PVWatts v8 via proxy; engine uses hourly TMY + storm-day derate",
+          "source": "AL nrelProxy; NEW",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "inverter_eff": {
+          "value": 0.88,
+          "source": "E:1127-1131",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "system_loss_factor": {
+          "value": 0.86,
+          "source": "E:1127-1131",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "degradation_per_yr": {
+          "value": 0.005,
+          "source": "E:1127-1131",
+          "verified_on": null,
+          "status": "unverified"
+        }
+      },
+      "storm_psh_national": {
+        "value": 1.0,
+        "source": "Cape storm case reused as conservative national default",
+        "verified_on": null,
+        "status": "unverified"
+      }
+    }
+  },
+  "business_model": {
+    "value": {
+      "public": "free: open repo, free API/MCP, free site",
+      "licenses": {
+        "code": "Apache-2.0",
+        "data": "CC-BY-4.0 (public config/region data; upstream licenses retained)",
+        "brand": "APS / WABD names and logos trademarked; not licensed"
+      },
+      "attribution": "every API/MCP/site response includes attribution + 'Get a firm quote / financing' handoff link to owner endpoint",
+      "origination": {
+        "consent": "explicit opt-in checkbox/tool arg; no consent = no PII leaves session",
+        "lead_schema": [
+          "lead_id",
+          "created_at",
+          "consent{given,text_version,timestamp}",
+          "contact{name,email,phone} (only with consent)",
+          "zip (address only with consent)",
+          "region{state,eia_utility_id,pack,confidence}",
+          "design{platform,inverter,battery_kwh,pv_kw,gen,tier,outage_days,cost_mid}",
+          "financing_interest{cash|loan|lease_tpo|unsure}",
+          "timeline{asap|3mo|6-12mo|researching}",
+          "source_surface{site|api|mcp}",
+          "config_version"
+        ],
+        "routing": "email lead summary to hello@antifragilepower.com (owner R6) + record in locked lead project; no resale",
+        "inbox_bot": "lead-inbox bot may monitor and draft replies; outbound replies require Bill's approval or an explicit owner-defined auto-reply rule",
+        "consent_text_draft": "Yes, send my design and contact details to Antifragile Power Systems (hello@antifragilepower.com) so they can contact me about a firm quote or financing. I can ask to have my information deleted at any time. My information will not be sold. (DRAFT - owner to approve)"
+      },
+      "privacy": "PII store separate from public data (different project, deny-by-default rules, no public read); public data has zero PII; retention + deletion on request; lesson: prior Firebase exposure"
+    },
+    "source": "owner 2026-10-30",
+    "verified_on": "2026-10-30",
+    "status": "verified"
+  },
+  "hosting": {
+    "value": {
+      "decision": "Option B Google (owner R5)",
+      "site": "Firebase Hosting serving ONLY a dedicated public/ folder (no config, data, or source in it)",
+      "api_mcp": "Cloud Run (or Cloud Functions) in public project",
+      "refresh": "GitHub Actions scheduled jobs",
+      "geodata": "Cloud Storage + SQLite files (PostGIS optional later)",
+      "leads": "SEPARATE locked-down GCP project; no Firebase Hosting access; deny-by-default; write-only service account from API",
+      "keys": "Secret Manager in owner account",
+      "future": "Cloudflare Workers migration possible; engine kept platform-neutral",
+      "est_cost": "~$0-15/mo, rough"
+    },
+    "source": "owner R5 2026-10-30",
+    "verified_on": "2026-10-30",
+    "status": "verified"
+  }
+}

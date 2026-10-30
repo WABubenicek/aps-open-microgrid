@@ -1,0 +1,9 @@
+Data and configuration license
+
+The data and configuration files in this repository (aps-config.v0.1.json, conflicts.md,
+spec-v0.1.md and other non-code data) are licensed under the Creative Commons
+Attribution 4.0 International License (CC-BY-4.0):
+https://creativecommons.org/licenses/by/4.0/
+
+Attribution: "APS Open Microgrid, Antifragile Power Systems".
+Source code (engine/) is licensed separately under Apache-2.0 (see LICENSE).
