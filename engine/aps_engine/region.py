@@ -73,7 +73,7 @@ def _conf(meta):
     return {"verified": "high", "auto_sourced": "medium", "unverified": "low"}.get(st, "none")
 
 
-def resolve_region(cfg, address=None, zip_field=None, online=False):
+def resolve_region(cfg, address=None, zip_field=None, online=False, national_baseline=True, eiaid=None):
     z = parse_zip(address, zip_field)
     if not z:
         return {"zip": None, "state": None, "pack_id": None, "status": "unknown",
@@ -95,8 +95,10 @@ def resolve_region(cfg, address=None, zip_field=None, online=False):
                    tariff={"rate_per_kwh": rate, "escalation": esc, "export_credit": exp, "source": rmeta["source"]},
                    tariff_confidence=_conf(rmeta), grid_services=list(root.get("grid_services", [])),
                    incentives=_incentives(cfg, root), climate=_climate(cfg, root))
+    elif national_baseline and st:
+        reg.update(_baseline(cfg, z, st, online, eiaid))
     else:
-        # Offline: no URDB/HIFLD -> baseline pack stub, tariff unknown -> finance hidden.
+        # Legacy (national_baseline=False): baseline pack stub, tariff unknown -> finance hidden.
         reg.update(pack_id=f"baseline-{(st or 'xx').lower()}", utility=None, tariff=None,
                    tariff_confidence="none", grid_services=[], incentives={},
                    climate=_climate(cfg, None),
@@ -106,6 +108,30 @@ def resolve_region(cfg, address=None, zip_field=None, online=False):
     reg["turnkey_area_text"] = area
     reg["nantucket"] = z in NANTUCKET
     return reg
+
+
+def _baseline(cfg, z, st, online, eiaid=None):
+    from . import baseline as B
+    util = B.utility_for_zip(z, st, eiaid)
+    tar = B.tariff(util, st)
+    esc = B.escalation(st)
+    exp = B.export_policy(util, st)
+    fed = B.federal()
+    out = {"pack_id": f"baseline-{st.lower()}", "baseline": True,
+           "utility": util["name"] if util else None, "utility_info": util,
+           "tariff": None if not tar else {"rate_per_kwh": tar["rate_per_kwh"], "escalation": esc["value"],
+                                           "export_credit": exp, "source": tar["source"],
+                                           "rate_meta": tar, "escalation_meta": esc},
+           "tariff_confidence": tar["confidence"] if tar else "none",
+           "grid_services": [], "baseline_grid_services": B.grid_programs_for(util, st),
+           "incentives": {"baseline": B.incentives_for(util, st),
+                          "federal_25d": {"enabled": False, "amount": 0, **fed["25D"]},
+                          "federal_48e_tpo": {"enabled": False, **fed["48E_tpo"]}},
+           "climate": _climate(cfg, None),
+           "message": "National baseline (auto-sourced, not curated): verify rates and incentives with your utility"}
+    if online and util:
+        out["urdb_default_tariff"] = B.urdb_default_tariff(util["eiaid"])
+    return out
 
 
 def _incentives(cfg, root):

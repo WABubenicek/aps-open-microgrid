@@ -37,7 +37,8 @@ def _meets(sim, req):
 def explore_tradeoffs(base_design, vary=None, req=None, cfg=None, weather_case="storm", outage_days=None,
                       load=None, region=None):
     cfg = _cfg(cfg); req = req or {}
-    region = region or resolve_region(cfg, req.get("address"), req.get("zip"))
+    region = region or resolve_region(cfg, req.get("address"), req.get("zip"), req.get("online", False),
+                                      req.get("national_baseline", True), req.get("utility_eiaid"))
     outage_days = outage_days or req.get("outage_days", 7)
     vary = vary or {}
     tiers = vary.get("load_tier", [req.get("tier", "bare_minimum")])
@@ -150,7 +151,8 @@ def design_system(req, cfg=None):
     conflicts = cfg.scan_conflicts()
     if conflicts:
         raise ConflictBlocked(f"config has conflict values; refusing to publish: {conflicts}")
-    region = resolve_region(cfg, req.get("address"), req.get("zip"), req.get("online", False))
+    region = resolve_region(cfg, req.get("address"), req.get("zip"), req.get("online", False),
+                            req.get("national_baseline", True), req.get("utility_eiaid"))
     load = build_load(cfg, req.get("tier", "bare_minimum"), req.get("kwh_day"), req.get("peak_w"),
                       req.get("appliances"), req.get("adders"))
     band = cfg.val("policy/preferred_tie_band")
@@ -228,7 +230,9 @@ def design_system(req, cfg=None):
                    tradeoffs=r["tradeoffs"], finance=fin)
     sol = solar_info(region.get("lat"), region.get("lon"), region.get("online", False))
     out["solar"] = sol
-    out["confidence"] = {"region": "high" if region.get("pack_id") == "ma-clc" else "low" if region.get("state") else "none",
+    out["confidence"] = {"region": "high" if region.get("pack_id") == "ma-clc" else
+                         ("medium" if (region.get("utility_info") or {}).get("confidence") == "medium" else "low") if region.get("state") else "none",
+                         "basis": "verified (curated MA pack)" if str(region.get("pack_id", "")).startswith("ma-") else "auto_sourced (national baseline)",
                          "tariff": region.get("tariff_confidence"), "climate": region["climate"]["confidence"],
                          "solar": "medium (PVWatts v8 annual; storm sizing still uses PSH-scaled hourly shape)" if sol["confidence"] == "medium" else "low (synthetic profile)", "prices": "street/owner values; see bom lines"}
     out["disclaimers"] = [cfg.val("policy/licensed_review_gate"),
@@ -244,13 +248,15 @@ def design_system(req, cfg=None):
 
 def get_incentives(req, cfg=None):
     cfg = _cfg(cfg)
-    region = resolve_region(cfg, req.get("address"), req.get("zip"), req.get("online", False))
+    region = resolve_region(cfg, req.get("address"), req.get("zip"), req.get("online", False),
+                            req.get("national_baseline", True), req.get("utility_eiaid"))
     return _fin.get_incentives(cfg, region)
 
 
 def model_financing(design, req, cfg=None):
     cfg = _cfg(cfg)
-    region = resolve_region(cfg, req.get("address"), req.get("zip"), req.get("online", False))
+    region = resolve_region(cfg, req.get("address"), req.get("zip"), req.get("online", False),
+                            req.get("national_baseline", True), req.get("utility_eiaid"))
     c = cost_design(cfg, design)
     usable = simulate(cfg, design, build_load(cfg), region, "storm", 1)["usable_kwh"]
     return _fin.model_financing(cfg, region, design, c, usable, req.get("finance_mode", "cash"))

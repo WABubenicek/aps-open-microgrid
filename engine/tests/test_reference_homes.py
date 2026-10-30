@@ -44,7 +44,7 @@ def test_nantucket_in_turnkey_area_and_not_clc():
 
 # ---- E: non-MA ----
 def test_E_austin_finance_hidden_cs_zero():
-    out = design_system({"address": "100 Congress Ave, Austin, TX 78701", "tier": "critical", "kwh_day": 20, "pv_kw_new": 6, "outage_days": 3})
+    out = design_system({"address": "100 Congress Ave, Austin, TX 78701", "tier": "critical", "kwh_day": 20, "pv_kw_new": 6, "outage_days": 3, "national_baseline": False})
     f = out["finance"]
     assert f["finance_available"] is False and f["payback_years"] is None
     assert "not available" in f["reason"]

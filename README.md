@@ -42,3 +42,19 @@ Every response carries a preliminary / licensed-review disclaimer and a `mode`: 
 service area (handoff hello@antifragilepower.com) or `diy_nationwide` (procure the BOM independently).
 Solar uses PVWatts v8 when `NLR_API_KEY` is set (source labelled in `result.solar`), else a synthetic profile.
 No requests or personal data are stored. Source: `service/`, `Dockerfile`.
+
+## National baseline (non-MA financials)
+
+Outside the curated MA pack, results use a bundled, free-source national baseline (`engine/aps_engine/baseline.py`):
+
+| Input | Source | Basis |
+|---|---|---|
+| Utility by ZIP | NREL/OpenEI "U.S. Electric Utility Companies and Rates: Look-up by Zipcode (2023)"; multiple utilities -> largest residential customer count (EIA-861 2024), others listed as alternatives | auto_sourced |
+| Residential $/kWh | EIA-861 2024 Sales to Ultimate Customers (revenue/sales); fallback 2023 ZIP table, then state average | auto_sourced |
+| Escalation | EIA-861 state CAGR 2019-2024, clamped 1-4%; else 3% | auto_sourced |
+| Export policy | `data/state_policy.json` (state table + utility overrides, each with source/date/confidence) | per entry |
+| Incentives / DR programs | `data/state_policy.json`; only entitlement-like, unexpired (180 days) items count | per entry |
+| Federal | §25D = $0 (ended 2025-12-31); §48E TPO unverified, not counted | verified / unverified |
+| URDB default tariff | OpenEI URDB (online, reference only) | auto_sourced |
+
+Every financial result carries `finance.labels` (verified vs auto_sourced). Pass `"national_baseline": false` for the legacy resilience-only behaviour. Rebuild data with `tools/build_eia861.py` and `tools/build_zip_utilities.py`.

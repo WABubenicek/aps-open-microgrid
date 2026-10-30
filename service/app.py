@@ -67,7 +67,8 @@ def t_model_financing(design: dict, req: dict) -> dict:
 
 def t_explore_tradeoffs(base_design: dict, vary: dict | None, req: dict) -> dict:
     r = _req(req)
-    region = resolve_region(CFG, r.get("address"), r.get("zip"), r.get("online", False))
+    region = resolve_region(CFG, r.get("address"), r.get("zip"), r.get("online", False),
+                            r.get("national_baseline", True), r.get("utility_eiaid"))
     return _wrap(eng.explore_tradeoffs(base_design, vary, r, CFG, region=region), r)
 
 
