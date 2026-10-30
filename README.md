@@ -30,3 +30,15 @@ Planned hosted API + MCP server exposing: `design_system`, `get_incentives`, `mo
 - Code: Apache-2.0 (`LICENSE`)
 - Data/config: CC-BY-4.0 (`DATA-LICENSE`)
 - "APS", "Antifragile Power Systems" and "WABD" names and marks are **not** licensed under either license.
+
+## Hosted API + MCP server
+
+A public instance runs on Google Cloud Run: `https://aps-engine-453566584239.us-east1.run.app`
+
+- REST: `POST /v1/design_system`, `/v1/get_incentives`, `/v1/model_financing`, `/v1/explore_tradeoffs`; `GET /health`
+- MCP (streamable HTTP): `https://aps-engine-453566584239.us-east1.run.app/mcp` (same four tools)
+
+Every response carries a preliminary / licensed-review disclaimer and a `mode`: `aps_service` inside the APS
+service area (handoff hello@antifragilepower.com) or `diy_nationwide` (procure the BOM independently).
+Solar uses PVWatts v8 when `NLR_API_KEY` is set (source labelled in `result.solar`), else a synthetic profile.
+No requests or personal data are stored. Source: `service/`, `Dockerfile`.

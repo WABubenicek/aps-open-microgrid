@@ -1,6 +1,18 @@
 """Region resolution. ZIP parsing ignores house numbers. Offline fallback: ZIP3 -> state table,
 curated MA overrides; national baseline packs (URDB/HIFLD) are only used when online + keyed."""
-import re
+import re, json, urllib.request
+from functools import lru_cache
+
+
+@lru_cache(maxsize=1024)
+def geocode_zip(z):
+    """ZIP -> (lat, lon) centroid via api.zippopotam.us (no key, no PII sent beyond the ZIP). None on failure."""
+    try:
+        with urllib.request.urlopen(f"https://api.zippopotam.us/us/{z}", timeout=8) as r:
+            p = json.load(r)["places"][0]
+        return float(p["latitude"]), float(p["longitude"])
+    except Exception:
+        return None
 
 # ZIP3 prefix ranges -> state (USPS allocation, inclusive)
 _ZIP3 = [(5,5,"NY"),(6,9,"PR"),(10,27,"MA"),(28,29,"RI"),(30,38,"NH"),(39,49,"ME"),(50,59,"VT"),
@@ -69,6 +81,10 @@ def resolve_region(cfg, address=None, zip_field=None, online=False):
                 "tariff_confidence": "none", "grid_services": [], "incentives": {}, "climate": _climate(cfg, None)}
     st = state_for_zip(z)
     reg = {"zip": z, "state": st, "status": "resolved", "online": online}
+    if online:
+        ll = geocode_zip(z)
+        if ll:
+            reg["lat"], reg["lon"] = ll
     if st == "MA":
         pack = "ma-clc" if _in_clc(z, cfg) else "ma-other"
         root = cfg.raw(f"regions/overrides/{pack}")

@@ -4,6 +4,7 @@ from .config import Config, ConflictBlocked
 from .region import resolve_region
 from .load import build_load
 from .equipment import inverter, battery, generator
+from .solar import solar_info
 from .simulate import simulate, battery_only_hours
 from .costs import cost_design
 from . import finance as _fin
@@ -225,9 +226,11 @@ def design_system(req, cfg=None):
                        f"(the inverter alerts you); it recharges to {int(cfg.val('design_rules/battery/gen_stop_soc')*100)}%."),
                    fuel_plan=_fuel_plan(cfg, d, region) if gen else None,
                    tradeoffs=r["tradeoffs"], finance=fin)
+    sol = solar_info(region.get("lat"), region.get("lon"), region.get("online", False))
+    out["solar"] = sol
     out["confidence"] = {"region": "high" if region.get("pack_id") == "ma-clc" else "low" if region.get("state") else "none",
                          "tariff": region.get("tariff_confidence"), "climate": region["climate"]["confidence"],
-                         "solar": "low (synthetic profile)", "prices": "street/owner values; see bom lines"}
+                         "solar": "medium (PVWatts v8 annual; storm sizing still uses PSH-scaled hourly shape)" if sol["confidence"] == "medium" else "low (synthetic profile)", "prices": "street/owner values; see bom lines"}
     out["disclaimers"] = [cfg.val("policy/licensed_review_gate"),
                           "Preliminary estimate, not licensed engineering. Not a quote.",
                           "Solar output uses a SYNTHETIC hourly profile unless PVWatts is available.",
@@ -241,13 +244,13 @@ def design_system(req, cfg=None):
 
 def get_incentives(req, cfg=None):
     cfg = _cfg(cfg)
-    region = resolve_region(cfg, req.get("address"), req.get("zip"))
+    region = resolve_region(cfg, req.get("address"), req.get("zip"), req.get("online", False))
     return _fin.get_incentives(cfg, region)
 
 
 def model_financing(design, req, cfg=None):
     cfg = _cfg(cfg)
-    region = resolve_region(cfg, req.get("address"), req.get("zip"))
+    region = resolve_region(cfg, req.get("address"), req.get("zip"), req.get("online", False))
     c = cost_design(cfg, design)
     usable = simulate(cfg, design, build_load(cfg), region, "storm", 1)["usable_kwh"]
     return _fin.model_financing(cfg, region, design, c, usable, req.get("finance_mode", "cash"))

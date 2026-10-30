@@ -59,7 +59,8 @@ def model_financing(cfg, region, design, cost, usable_kwh, mode="cash", loan_apr
         return res
     rate = region["tariff"]["rate_per_kwh"]; esc = region["tariff"]["escalation"]
     deg = cfg.val("regions/climate_defaults/degradation_per_yr", default=0.005)
-    kwh, kmeta = annual_kwh(design.get("pv_kw_new", 0), region["climate"]["psh_average"], online=online)
+    kwh, kmeta = annual_kwh(design.get("pv_kw_new", 0), region["climate"]["psh_average"],
+                         lat=region.get("lat"), lon=region.get("lon"), online=online or region.get("online", False))
     solar_val = kwh * rate  # NEM export credited ~retail (C19) -> self-consumption ~= export
     gs_inc = sum(g["annual_income"] or 0 for g in gs if g["included_in_payback"])
     lock = max([g["lock_in_years"] or 5 for g in gs if g["included_in_payback"]] or [0])
