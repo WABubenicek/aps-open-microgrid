@@ -57,4 +57,6 @@ Outside the curated MA pack, results use a bundled, free-source national baselin
 | Federal | §25D = $0 (ended 2025-12-31); §48E TPO unverified, not counted | verified / unverified |
 | URDB default tariff | OpenEI URDB (online, reference only) | auto_sourced |
 
-Every financial result carries `finance.labels` (verified vs auto_sourced). Pass `"national_baseline": false` for the legacy resilience-only behaviour. Rebuild data with `tools/build_eia861.py` and `tools/build_zip_utilities.py`.
+Every financial result carries `finance.labels` (verified vs auto_sourced). Sol-Ark: the Limitless 12K-2P-LL is preferred when peak <= 10 kW, the goal is met and the generator fits its 14 kW GEN port (15K stays default otherwise; 12K-2P-N is legacy, `prefer_12k`). The announced Sol-Ark S16 battery is opt-in only (`battery_brand: "sol-ark-s16"` or `include_announced: true`) and returns a `battery_comparison` ($/kWh vs the EG4 default, preliminary-spec and UL 9540 April 2027 flags).
+
+Pass `"national_baseline": false` for the legacy resilience-only behaviour. Rebuild data with `tools/build_eia861.py` and `tools/build_zip_utilities.py`.

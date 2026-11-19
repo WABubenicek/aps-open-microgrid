@@ -10,7 +10,9 @@ from .costs import cost_design
 from . import finance as _fin
 
 ENGINE_VERSION = "0.1.0"
-SOLARK = ["solark-12k-2p-n", "solark-15k-2p-n", "solark-18k-2p-n"]
+SOLARK = ["solark-12k-2p-ll", "solark-12k-2p-n", "solark-15k-2p-n", "solark-18k-2p-n"]
+DEFAULT_BATTERY = "eg4-wallmount-powerpro-14.3"
+S16 = "solark-s16"
 RESEARCH_PLATFORMS = ["eg4", "enphase", "franklinwh"]
 
 
@@ -44,17 +46,23 @@ def explore_tradeoffs(base_design, vary=None, req=None, cfg=None, weather_case="
     tiers = vary.get("load_tier", [req.get("tier", "bare_minimum")])
     grid = []
     min_u = cfg.val("design_rules/battery/min_units_serious")
+    base_bat = base_design.get("battery") or DEFAULT_BATTERY
+    batteries = list(vary.get("battery", [base_bat]))
+    if _wants_s16(req) and S16 not in batteries and _compatible(cfg, S16, base_design.get("inverter")):
+        batteries.append(S16)
+    batteries = [b for b in batteries if _compatible(cfg, b, base_design.get("inverter"))] or [base_bat]
     for tier in tiers:
         ld = load if (load and tier == load["tier"]) else build_load(cfg, tier, req.get("kwh_day"), req.get("peak_w"),
                                                                       req.get("appliances"), req.get("adders"))
         for u in vary.get("battery_units", [base_design.get("battery_units", 2)]):
+          for bat in batteries:
             for pv in vary.get("pv_kw", [base_design.get("pv_kw_new", 0)]):
                 for g in vary.get("generator", [base_design.get("generator")]):
-                    d = {**base_design, "battery_units": u, "pv_kw_new": pv, "generator": g,
+                    d = {**base_design, "battery_units": u, "pv_kw_new": pv, "generator": g, "battery": bat,
                          "gen_allowed": g is not None and base_design.get("gen_allowed", True)}
                     s = simulate(cfg, d, ld, region, weather_case, outage_days)
                     c = cost_design(cfg, d)
-                    row = {"inverter": d["inverter"], "battery_units": u, "usable_kwh": s["usable_kwh"], "pv_kw_new": pv,
+                    row = {"inverter": d["inverter"], "battery": bat, "battery_status": _battery_status(cfg, bat), "battery_units": u, "usable_kwh": s["usable_kwh"], "pv_kw_new": pv,
                            "generator": g, "gen_kw_effective": s["gen_effective_kw"], "load_tier": tier,
                            "kwh_day": ld["kwh_day"], "cost_at_cost": c["total_at_cost"],
                            "gen_hrs_per_day": s["avg_gen_hrs_per_day"], "total_gal": s["total_gal"],
@@ -69,7 +77,42 @@ def explore_tradeoffs(base_design, vary=None, req=None, cfg=None, weather_case="
                     grid.append(row)
     ok = [r for r in grid if r["meets_goal"] and r["cost_at_cost"] is not None]
     rec = min(ok, key=lambda r: (r["cost_at_cost"], r["total_gal"])) if ok else None
-    return {"weather_case": weather_case, "outage_days": outage_days, "grid": grid, "recommendation": rec}
+    res = {"weather_case": weather_case, "outage_days": outage_days, "grid": grid, "recommendation": rec}
+    if S16 in batteries:
+        res["battery_comparison"] = battery_comparison(cfg)
+    return res
+
+
+def _wants_s16(req):
+    req = req or {}
+    return req.get("battery_brand") == "sol-ark-s16" or req.get("battery") == S16 or bool(req.get("include_announced"))
+
+
+def _compatible(cfg, bid, iid):
+    comp = cfg.raw(f"catalog/batteries/{bid}/compatible_inverters")
+    return comp is None or iid is None or iid in cfg.val(f"catalog/batteries/{bid}/compatible_inverters")
+
+
+def _battery_status(cfg, bid):
+    r = cfg.raw(f"catalog/batteries/{bid}") or {}
+    return r.get("availability", "shipping")
+
+
+def battery_comparison(cfg, designs=None):
+    """$/kWh: EG4 default vs announced Sol-Ark S16 (preliminary)."""
+    out = {}
+    for bid in (DEFAULT_BATTERY, S16):
+        b = battery(cfg, bid); usable = b["kwh"] * b["usable_fraction"]
+        out[bid] = {"price_per_unit": b["price"], "price_status": b["price_status"], "usable_kwh_per_unit": round(usable, 2),
+                    "per_usable_kwh": round(b["price"] / usable, 0), "availability": _battery_status(cfg, bid)}
+        if designs and bid in designs:
+            out[bid].update(designs[bid])
+    out["delta_per_usable_kwh"] = out[S16]["per_usable_kwh"] - out[DEFAULT_BATTERY]["per_usable_kwh"]
+    out["flags"] = ["Sol-Ark S16 is ANNOUNCED, not shipping: preliminary specifications, subject to change (RE+ 2026); confidence low",
+                    "S16 price is target MSRP $4,350; street price unknown",
+                    "UL 1973 units ship Jan 2027; UL 9540 (required for grid-interconnected systems) ships Apr 2027",
+                    "EG4 WallMount PowerPro 14.3 remains the default"]
+    return out
 
 
 def _size_platform(cfg, iid, req, load, region):
@@ -82,23 +125,29 @@ def _size_platform(cfg, iid, req, load, region):
         reasons.append(f"peak {peak:.0f} W exceeds battery-side continuous {inv['battery_side_w']} W")
     if inv["pv_max_w"] and pv_total > inv["pv_max_w"] * (inv["max_units"] if inv["platform"] == "tesla" else 1):
         reasons.append(f"PV {pv_total/1000:.1f} kW exceeds usable PV max {inv['pv_max_w']/1000:.1f} kW")
+    bat = req.get("battery", DEFAULT_BATTERY)
+    if inv["platform"] != "tesla" and not _compatible(cfg, bat, iid):
+        reasons.append(f"battery {bat} not listed as compatible with {iid}")
     if reasons:
         return {"status": "rejected", "reasons": reasons}
     gen_id = req.get("generator", cfg.val("catalog/default_portable_generator")) if req.get("gen_allowed", True) else None
     base = {"inverter": iid, "n_inverters": 1, "pv_kw_new": req.get("pv_kw_new", 0),
             "pv_kw_existing": req.get("pv_kw_existing", 0), "generator": gen_id,
-            "gen_allowed": req.get("gen_allowed", True), "battery": req.get("battery", "eg4-wallmount-powerpro-14.3")}
+            "gen_allowed": req.get("gen_allowed", True), "battery": bat}
     if inv["platform"] == "tesla":
         units_opts = list(range(1, inv["max_units"] + 1))
     else:
         f = _floor_units(cfg, base["battery"], load, req.get("target_hours", 24))
         units_opts = list(range(f, f + 4))
-    ex = explore_tradeoffs(base, {"battery_units": units_opts}, req, cfg, "storm", req.get("outage_days", 7), load, region)
+    ex = explore_tradeoffs(base, {"battery_units": units_opts, "battery": [bat]}, req, cfg, "storm", req.get("outage_days", 7), load, region)
     feas = [r for r in ex["grid"] if r["meets_goal"]]
     notes = []
     gen = generator(cfg, gen_id)
     if gen and inv["platform"] != "tesla" and gen["rated_kw"] * 1000 > inv["gen_port_max_w"]:
         notes.append(f"generator {gen['rated_kw']} kW limited to {inv['gen_port_max_w']/1000:.1f} kW at GEN port")
+    pt = cfg.val(f"catalog/inverters/{iid}/grid_passthrough_a") if "grid_passthrough_a" in cfg.raw(f"catalog/inverters/{iid}") else None
+    if iid == "solark-12k-2p-ll" and pt:
+        notes.append(f"{pt:.0f} A grid passthrough: can serve a 100 A service/backup panel without a panel upgrade")
     if not feas:
         worst = min(ex["grid"], key=lambda r: r["unserved_kwh"])
         return {"status": "rejected", "reasons": [f"goal not met at storm sun: {worst['unserved_kwh']} kWh unserved"
@@ -148,6 +197,8 @@ def _fuel_plan(cfg, design, region):
 
 def design_system(req, cfg=None):
     cfg = _cfg(cfg)
+    if req.get("battery_brand") == "sol-ark-s16":
+        req = {**req, "battery": S16}
     conflicts = cfg.scan_conflicts()
     if conflicts:
         raise ConflictBlocked(f"config has conflict values; refusing to publish: {conflicts}")
@@ -188,8 +239,16 @@ def design_system(req, cfg=None):
     pick = None
     if cands:
         ids = [c["id"] for c in cands]
-        if default_model in ids and not req.get("prefer_12k") and req.get("inverter", "auto") == "auto":
+        ll = _ll_rule(cfg, req, load, ids)
+        if ll and not req.get("prefer_12k") and req.get("inverter", "auto") == "auto":
+            pick = ll["model"]; why = ll["why"]
+            other = pick_with_tie_band([c for c in cands if c["platform"] != "sol-ark"] + [c for c in cands if c["id"] == pick], band)
+            if other and other["platform"] != "sol-ark":
+                pick = other["id"]; why = "lower net cost beyond Sol-Ark tie band"
+        elif default_model in ids and not req.get("prefer_12k") and req.get("inverter", "auto") == "auto":
             pick = default_model; why = "owner default (15K: rapid recharge with oversized generator)"
+            if "solark-12k-2p-ll" in ids:
+                why += f"; 12K-LL not preferred: {_ll_rule(cfg, req, load, ids, explain=True)}"
             other = pick_with_tie_band([c for c in cands if c["platform"] != "sol-ark"] + [c for c in cands if c["id"] == pick], band)
             if other and other["platform"] != "sol-ark":
                 pick = other["id"]; why = "lower net cost beyond Sol-Ark tie band"
@@ -228,6 +287,11 @@ def design_system(req, cfg=None):
                        f"(the inverter alerts you); it recharges to {int(cfg.val('design_rules/battery/gen_stop_soc')*100)}%."),
                    fuel_plan=_fuel_plan(cfg, d, region) if gen else None,
                    tradeoffs=r["tradeoffs"], finance=fin)
+        if _wants_s16(req):
+            out["battery_comparison"] = _s16_comparison(cfg, req, load, region, pick, d, c)
+        if d["battery"] == S16:
+            out.setdefault("warnings", []).append("Design uses ANNOUNCED Sol-Ark S16 (preliminary specs, not shipping). "
+                                                  "UL 9540 for interconnected systems ships April 2027.")
     sol = solar_info(region.get("lat"), region.get("lon"), region.get("online", False))
     out["solar"] = sol
     out["confidence"] = {"region": "high" if region.get("pack_id") == "ma-clc" else
@@ -243,6 +307,49 @@ def design_system(req, cfg=None):
     out["handoff"] = {"label": "Get a firm quote / financing", "email": "hello@antifragilepower.com",
                       "consent_required": True, "consent_text": cfg.val("policy/consent_text"),
                       "consent_version": cfg.raw("policy/consent_text").get("version")}
+    return out
+
+
+def _ll_rule(cfg, req, load, ids, explain=False):
+    """12K-LL preferred when peak <= 10 kW, its design meets the goal (incl. generator recharge), and the
+    generator fits its 14 kW GEN port; otherwise 15K stays default (oversized-gen rapid recharge)."""
+    rule = cfg.val("design_rules/inverter_select/ll_rule")
+    gen_id = req.get("generator", cfg.val("catalog/default_portable_generator")) if req.get("gen_allowed", True) else None
+    gen = generator(cfg, gen_id)
+    why_not = None
+    if rule["model"] not in ids:
+        why_not = "no feasible priced 12K-LL design (peak, PV, or goal)"
+    elif load["peak_w"] > rule["max_peak_w"]:
+        why_not = f"peak {load['peak_w']:.0f} W > {rule['max_peak_w']} W"
+    elif gen and gen["rated_kw"] > rule["max_generator_kw"]:
+        why_not = f"generator {gen['rated_kw']} kW exceeds 12K-LL GEN port {rule['max_generator_kw']} kW (15K for rapid recharge)"
+    if explain:
+        return why_not
+    if why_not:
+        return None
+    return {"model": rule["model"], "why": f"12K-LL rule: peak {load['peak_w']:.0f} W <= {rule['max_peak_w']} W, goal met, "
+            f"generator {'none' if not gen else str(gen['rated_kw']) + ' kW'} within 14 kW GEN port; 100 A passthrough avoids panel upgrade on 100 A service"}
+
+
+def _s16_comparison(cfg, req, load, region, pick, d, c):
+    """Size the picked inverter with the other battery (EG4 default vs S16) and compare $/kWh."""
+    def summary(design, cost):
+        s = simulate(cfg, design, load, region, "storm", req.get("outage_days", 7))
+        return {"battery_units": design["battery_units"], "usable_kwh": s["usable_kwh"], "cost_at_cost": cost["total_at_cost"],
+                "total_gal": s["total_gal"]}
+    designs = {d["battery"]: summary(d, c)}
+    other = DEFAULT_BATTERY if d["battery"] == S16 else S16
+    if _compatible(cfg, other, pick) and inverter(cfg, pick)["platform"] != "tesla":
+        r = _size_platform(cfg, pick, {**req, "battery": other}, load, region)
+        if r["status"] == "candidate":
+            designs[other] = summary(r["design"], cost_design(cfg, r["design"]))
+        else:
+            designs[other] = {"status": r["status"], "reasons": r.get("reasons")}
+    else:
+        designs[other] = {"status": "incompatible", "reasons": [f"{other} not listed as compatible with {pick}"]}
+    out = battery_comparison(cfg, designs)
+    if all("cost_at_cost" in designs.get(k, {}) for k in (DEFAULT_BATTERY, S16)):
+        out["system_cost_delta_s16_minus_eg4"] = round(designs[S16]["cost_at_cost"] - designs[DEFAULT_BATTERY]["cost_at_cost"], 0)
     return out
 
 

@@ -69,15 +69,18 @@ def test_pw3_not_rejected_for_gen_when_goal_needs_no_gen():
 
 # ---- 15K default / 12K vs 15K / H ----
 def test_15k_is_default_inverter():
-    out = design_system({"address": BREWSTER, "tier": "critical", "kwh_day": 15.38, "pv_kw_new": 4, "outage_days": 7})
+    # 2026-11-19: 15K stays default when the 12K-LL rule does not apply (here: generator > 14 kW GEN port)
+    out = design_system({"address": BREWSTER, "tier": "critical", "kwh_day": 15.38, "pv_kw_new": 4, "outage_days": 7,
+                         "generator": "generac-guardian-22kw-installed"})
     assert out["design"]["inverter"] == "solark-15k-2p-n"
-    assert status(out, "solark-12k-2p-n")["status"] == "alternative"
+    assert status(out, "solark-12k-2p-ll")["status"] == "alternative"
+    assert any("exceeds 12K-LL GEN port" in r for r in status(out, "solark-15k-2p-n")["reasons"])
 
 def test_12k_optional_and_cs_eligible_vs_15k_pending():
     req = {"address": BREWSTER, "tier": "critical", "kwh_day": 15.38, "pv_kw_new": 4, "outage_days": 7}
     o12 = design_system({**req, "prefer_12k": True})
-    o15 = design_system(req)
-    assert o12["design"]["inverter"] == "solark-12k-2p-n"
+    o15 = design_system({**req, "inverter": "solark-15k-2p-n"})
+    assert o12["design"]["inverter"] == "solark-12k-2p-n" and o15["design"]["inverter"] == "solark-15k-2p-n"
     g12 = o12["finance"]["grid_services"][0]; g15 = o15["finance"]["grid_services"][0]
     assert g12["status"] == "included" and g12["included_in_payback"]
     assert g15["status"] == "pending eligibility" and not g15["included_in_payback"]  # F-2

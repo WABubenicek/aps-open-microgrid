@@ -1,8 +1,17 @@
 {
   "$schema_note": "Every leaf = {value, source, verified_on, status: verified|unverified|conflict}. Engine refuses to publish any value whose status is conflict; unverified values publish only with an on-page 'unverified' flag. PRELIMINARY - not licensed engineering.",
   "name": "aps-config",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "changelog": [
+    {
+      "version": "0.7.0",
+      "date": "2026-11-19",
+      "changes": [
+        "Add Sol-Ark Limitless 12K-2P-LL (MSRP $3,999 verified-MSRP; GEN port 14 kW from datasheet); 12K-2P-N kept as legacy",
+        "12K-LL rule: peak <=10 kW + generator <=14 kW -> 12K-LL, else 15K default",
+        "Add Sol-Ark S16 battery as announced/preliminary opt-in (battery_brand='sol-ark-s16' or include_announced); EG4 stays default"
+      ]
+    },
     {
       "version": "0.6.0",
       "date": "2026-10-30",
@@ -172,9 +181,15 @@
           "status": "verified"
         },
         "model_note": {
-          "value": "12K-2P-N = model 'Sol-Ark-12K-P', SKU 12K-2P: one product, no newer 12K variant found",
+          "value": "12K-2P-N = model 'Sol-Ark-12K-P', SKU 12K-2P: one product, no newer 12K variant found | LEGACY as of 2026-11-19: superseded by Limitless 12K-2P-LL; kept for CLC Connected Solutions eligibility (prefer_12k)",
           "source": "Sol-Ark 12K datasheet Rev 3 (2025-06-18) https://sol-ark.com/wp-content/uploads/2024/06/SK150-0003_Rev-3_12K_Datasheet_EN_18June2025.pdf",
           "verified_on": "2026-10-30",
+          "status": "verified"
+        },
+        "legacy": {
+          "value": true,
+          "source": "owner approval 2026-11-19 (keep 12K-2P-N as legacy)",
+          "verified_on": "2026-11-19",
           "status": "verified"
         }
       },
@@ -473,6 +488,123 @@
           "status": "unverified"
         },
         "note": "Engine consequence: on Tesla path, simulate() must NOT recharge the battery from the generator; generator serves load directly via transfer switch when battery is at reserve. Re-check docs before publishing."
+      },
+      "solark-12k-2p-ll": {
+        "platform": "sol-ark",
+        "name": {
+          "value": "Sol-Ark Limitless 12K-2P-LL",
+          "source": "https://sol-ark.com/residential-energy-solutions/limitless-12k-2p-ll-hybrid-inverter/ ; https://sol-ark.com/meet-the-new-limitless-12k-2p-ll/",
+          "verified_on": "2026-11-19",
+          "status": "verified"
+        },
+        "datasheet_url": "https://sol-ark.com/wp-content/uploads/2026/05/12K-2P-LL_Datasheet_Rev3_PS-00045_14July2026.pdf",
+        "continuous_ac_w": {
+          "value": {
+            "with_pv": 12000,
+            "battery_only": 10000
+          },
+          "source": "datasheet Rev3: 12,000 W nominal real power (240 V, grid-tied); 10,000 W max continuous backup from batteries https://sol-ark.com/wp-content/uploads/2026/05/12K-2P-LL_Datasheet_Rev3_PS-00045_14July2026.pdf",
+          "verified_on": "2026-11-19",
+          "status": "verified"
+        },
+        "continuous_battery_w": {
+          "value": 10000,
+          "source": "datasheet Rev3: Backup Max. Continuous Power 10,000 W (240 V) https://sol-ark.com/wp-content/uploads/2026/05/12K-2P-LL_Datasheet_Rev3_PS-00045_14July2026.pdf",
+          "verified_on": "2026-11-19",
+          "status": "verified"
+        },
+        "surge_10s_w": {
+          "value": 24000,
+          "source": "datasheet Rev3: Peak Surge Power (10 s, off-grid) 24,000 W https://sol-ark.com/wp-content/uploads/2026/05/12K-2P-LL_Datasheet_Rev3_PS-00045_14July2026.pdf",
+          "verified_on": "2026-11-19",
+          "status": "verified"
+        },
+        "pv_max_w": {
+          "value": {
+            "usable": 12000,
+            "allowed_stc": 19200
+          },
+          "source": "datasheet Rev3: Max STC rated PV 19,200 W; Max usable combined MPPT PV 12,000 W; 3 MPPT x 2 strings https://sol-ark.com/wp-content/uploads/2026/05/12K-2P-LL_Datasheet_Rev3_PS-00045_14July2026.pdf",
+          "verified_on": "2026-11-19",
+          "status": "verified",
+          "note": "product page markets '19.2 kW PV'; engine uses usable 12 kW for sizing"
+        },
+        "ac_coupling_max_w": {
+          "value": 14000,
+          "source": "datasheet Rev3 GEN port: Max AC coupled PV 14,000 W (240 V) https://sol-ark.com/wp-content/uploads/2026/05/12K-2P-LL_Datasheet_Rev3_PS-00045_14July2026.pdf",
+          "verified_on": "2026-11-19",
+          "status": "verified"
+        },
+        "gen_port_max_w": {
+          "value": 14000,
+          "source": "datasheet Rev3 GEN port: Max Generator Power 14,000 W (240 V), 60 A max; manual 2.5: generators <14 kW on GEN terminal (60 A rated, 58 A continuous, 120/240 V split-phase only), >14 kW go to GRID terminal with 'GEN Connect to Grid Input' https://sol-ark.com/wp-content/uploads/2026/05/12K-2P-LL_Datasheet_Rev3_PS-00045_14July2026.pdf ; https://sol-ark.com/wp-content/uploads/2026/05/12K-LL_Installation_Manual_MA-00057_Rev3_16July202.pdf ; quickstart (GEN 60 A terminal) https://sol-ark.com/wp-content/uploads/prod-doc/12K-LL_QuickStart_Rev2_6July2026.pdf",
+          "verified_on": "2026-11-19",
+          "status": "verified",
+          "note": "Not stated on the product page; found in datasheet + manual. Datasheet/manual text read via search index (direct PDF download returned 404 from the box); quickstart PDF downloaded and confirms 60 A GEN terminal."
+        },
+        "max_ac_charge_w": {
+          "value": 11264,
+          "source": "220 A x 51.2 V (datasheet Rev3: max charge/discharge 220 A, 48 V nominal) https://sol-ark.com/wp-content/uploads/2026/05/12K-2P-LL_Datasheet_Rev3_PS-00045_14July2026.pdf",
+          "verified_on": "2026-11-19",
+          "status": "verified"
+        },
+        "battery_voltage_v": {
+          "value": 48,
+          "source": "datasheet Rev3 https://sol-ark.com/wp-content/uploads/2026/05/12K-2P-LL_Datasheet_Rev3_PS-00045_14July2026.pdf",
+          "verified_on": "2026-11-19",
+          "status": "verified"
+        },
+        "grid_passthrough_a": {
+          "value": 100,
+          "source": "datasheet Rev3: Max passthrough current (grid to load) 100 A https://sol-ark.com/wp-content/uploads/2026/05/12K-2P-LL_Datasheet_Rev3_PS-00045_14July2026.pdf",
+          "verified_on": "2026-11-19",
+          "status": "verified",
+          "note": "100 A passthrough: can feed a 100 A service/backup panel without a panel upgrade or external contactor"
+        },
+        "interconnection_risk_ma": {
+          "value": "low",
+          "source": "UL1741 SB / IEEE1547-2018 listed per datasheet; MA utility acceptance not yet confirmed",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "capabilities": {
+          "generator_control_ags": {
+            "value": true,
+            "source": "datasheet Rev3: AGS 2-wire start integrated https://sol-ark.com/wp-content/uploads/2026/05/12K-2P-LL_Datasheet_Rev3_PS-00045_14July2026.pdf",
+            "verified_on": "2026-11-19",
+            "status": "verified"
+          },
+          "generator_charges_battery": {
+            "value": true,
+            "source": "manual 2.5 Gen Charge https://sol-ark.com/wp-content/uploads/2026/05/12K-LL_Installation_Manual_MA-00057_Rev3_16July202.pdf",
+            "verified_on": "2026-11-19",
+            "status": "verified"
+          },
+          "off_grid": {
+            "value": true,
+            "source": "manual 2.5 (off-grid generator wiring) https://sol-ark.com/wp-content/uploads/2026/05/12K-LL_Installation_Manual_MA-00057_Rev3_16July202.pdf",
+            "verified_on": "2026-11-19",
+            "status": "verified"
+          },
+          "closed_loop_battery_comms": {
+            "value": true,
+            "source": "datasheet Rev3: BMS CANbus/RS485/MODBUS https://sol-ark.com/wp-content/uploads/2026/05/12K-2P-LL_Datasheet_Rev3_PS-00045_14July2026.pdf",
+            "verified_on": "2026-11-19",
+            "status": "verified"
+          }
+        },
+        "cs_eligible_clc": {
+          "value": "pending_eligibility",
+          "source": "not on CLC eligible-equipment list as of 2026-11-19 (new model)",
+          "verified_on": null,
+          "status": "unverified"
+        },
+        "model_note": {
+          "value": "Limitless 12K-2P-LL (new 2026). Rules engine prefers it over 15K when peak <=10 kW, goal met, and generator <=14 kW (fits GEN port).",
+          "source": "owner approval 2026-11-19",
+          "verified_on": "2026-11-19",
+          "status": "verified"
+        }
       }
     },
     "batteries": {
@@ -631,6 +763,151 @@
           "source": "NEEDS RESEARCH",
           "verified_on": null,
           "status": "unverified"
+        }
+      },
+      "solark-s16": {
+        "platform": "sol-ark",
+        "name": {
+          "value": "Sol-Ark S16 (PRELIMINARY, not yet shipping)",
+          "source": "Sol-Ark RE+ 2026 announcement https://www.youtube.com/watch?v=IodhoKNNQ6I (slides: 'Preliminary specifications. Subject to change')",
+          "verified_on": "2026-11-19",
+          "status": "announced"
+        },
+        "preliminary": true,
+        "availability": "announced",
+        "confidence": "low",
+        "kwh": {
+          "value": 16.0,
+          "source": "Sol-Ark RE+ 2026 announcement https://www.youtube.com/watch?v=IodhoKNNQ6I (slides: 'Preliminary specifications. Subject to change')",
+          "verified_on": "2026-11-19",
+          "status": "announced",
+          "note": "usable; 51.2 V x 314 Ah = 16.08 kWh nominal"
+        },
+        "usable_fraction": {
+          "value": 1.0,
+          "source": "Sol-Ark RE+ 2026 announcement https://www.youtube.com/watch?v=IodhoKNNQ6I (slides: 'Preliminary specifications. Subject to change')",
+          "verified_on": "2026-11-19",
+          "status": "announced",
+          "note": "16 kWh usable at 100% DoD"
+        },
+        "nominal_v": {
+          "value": 51.2,
+          "source": "Sol-Ark RE+ 2026 announcement https://www.youtube.com/watch?v=IodhoKNNQ6I (slides: 'Preliminary specifications. Subject to change')",
+          "verified_on": "2026-11-19",
+          "status": "announced"
+        },
+        "capacity_ah": {
+          "value": 314,
+          "source": "Sol-Ark RE+ 2026 announcement https://www.youtube.com/watch?v=IodhoKNNQ6I (slides: 'Preliminary specifications. Subject to change')",
+          "verified_on": "2026-11-19",
+          "status": "announced"
+        },
+        "dod": {
+          "value": 1.0,
+          "source": "Sol-Ark RE+ 2026 announcement https://www.youtube.com/watch?v=IodhoKNNQ6I (slides: 'Preliminary specifications. Subject to change')",
+          "verified_on": "2026-11-19",
+          "status": "announced"
+        },
+        "max_charge_w": {
+          "value": 10240,
+          "source": "Sol-Ark RE+ 2026 announcement https://www.youtube.com/watch?v=IodhoKNNQ6I (slides: 'Preliminary specifications. Subject to change')",
+          "verified_on": "2026-11-19",
+          "status": "announced",
+          "note": "200 A continuous charge/discharge x 51.2 V"
+        },
+        "max_discharge_w": {
+          "value": 10240,
+          "source": "Sol-Ark RE+ 2026 announcement https://www.youtube.com/watch?v=IodhoKNNQ6I (slides: 'Preliminary specifications. Subject to change')",
+          "verified_on": "2026-11-19",
+          "status": "announced"
+        },
+        "peak_a_15s": {
+          "value": 300,
+          "source": "Sol-Ark RE+ 2026 announcement https://www.youtube.com/watch?v=IodhoKNNQ6I (slides: 'Preliminary specifications. Subject to change')",
+          "verified_on": "2026-11-19",
+          "status": "announced"
+        },
+        "cycles": {
+          "value": 8000,
+          "source": "Sol-Ark RE+ 2026 announcement https://www.youtube.com/watch?v=IodhoKNNQ6I (slides: 'Preliminary specifications. Subject to change')",
+          "verified_on": "2026-11-19",
+          "status": "announced"
+        },
+        "warranty": {
+          "value": "10 yr / 98 MWh",
+          "source": "Sol-Ark RE+ 2026 announcement https://www.youtube.com/watch?v=IodhoKNNQ6I (slides: 'Preliminary specifications. Subject to change')",
+          "verified_on": "2026-11-19",
+          "status": "announced"
+        },
+        "comms": {
+          "value": "closed-loop CAN / RS485",
+          "source": "Sol-Ark RE+ 2026 announcement https://www.youtube.com/watch?v=IodhoKNNQ6I (slides: 'Preliminary specifications. Subject to change')",
+          "verified_on": "2026-11-19",
+          "status": "announced"
+        },
+        "closed_loop": {
+          "value": "closed-loop (Sol-Ark native)",
+          "source": "Sol-Ark RE+ 2026 announcement https://www.youtube.com/watch?v=IodhoKNNQ6I (slides: 'Preliminary specifications. Subject to change')",
+          "verified_on": "2026-11-19",
+          "status": "announced"
+        },
+        "enclosure": {
+          "value": "IP66 / NEMA 3R",
+          "source": "Sol-Ark RE+ 2026 announcement https://www.youtube.com/watch?v=IodhoKNNQ6I (slides: 'Preliminary specifications. Subject to change')",
+          "verified_on": "2026-11-19",
+          "status": "announced"
+        },
+        "weight_lb": {
+          "value": 300,
+          "source": "Sol-Ark RE+ 2026 announcement https://www.youtube.com/watch?v=IodhoKNNQ6I (slides: 'Preliminary specifications. Subject to change')",
+          "verified_on": "2026-11-19",
+          "status": "announced"
+        },
+        "parallel_max": {
+          "value": {
+            "units": 16,
+            "kwh": 256
+          },
+          "source": "Sol-Ark RE+ 2026 announcement https://www.youtube.com/watch?v=IodhoKNNQ6I (slides: 'Preliminary specifications. Subject to change')",
+          "verified_on": "2026-11-19",
+          "status": "announced"
+        },
+        "price_cost": {
+          "value": 4350,
+          "source": "Sol-Ark RE+ 2026 announcement https://www.youtube.com/watch?v=IodhoKNNQ6I (slides: 'Preliminary specifications. Subject to change')",
+          "verified_on": "2026-11-19",
+          "status": "announced",
+          "note": "target MSRP (announced); street price unknown"
+        },
+        "ul_1973_ship": {
+          "value": "2027-01",
+          "source": "Sol-Ark RE+ 2026 announcement https://www.youtube.com/watch?v=IodhoKNNQ6I (slides: 'Preliminary specifications. Subject to change')",
+          "verified_on": "2026-11-19",
+          "status": "announced"
+        },
+        "ul_9540_ship": {
+          "value": "2027-04",
+          "source": "Sol-Ark RE+ 2026 announcement https://www.youtube.com/watch?v=IodhoKNNQ6I (slides: 'Preliminary specifications. Subject to change')",
+          "verified_on": "2026-11-19",
+          "status": "announced",
+          "note": "UL 9540 (needed for grid-interconnected ESS permits) ships April 2027"
+        },
+        "compatible_inverters": {
+          "value": [
+            "solark-15k-2p-n",
+            "solark-18k-2p-n",
+            "solark-12k-2p-ll"
+          ],
+          "source": "Sol-Ark RE+ 2026 announcement https://www.youtube.com/watch?v=IodhoKNNQ6I (slides: 'Preliminary specifications. Subject to change')",
+          "verified_on": "2026-11-19",
+          "status": "announced",
+          "note": "slide lists 15K-2P-LV, 18K-2P-LV, 12K-2P-LL; LV mapped to catalog 48 V 15K-2P-N/18K-2P-N (assumption). Legacy 12K-2P-N not listed."
+        },
+        "datasheet_url": {
+          "value": null,
+          "source": "no datasheet yet (announcement only)",
+          "verified_on": null,
+          "status": "unknown"
         }
       }
     },
@@ -989,10 +1266,15 @@
             "status": "unknown"
           },
           "battery_skus": {
-            "value": null,
-            "source": "NEEDS RESEARCH",
-            "verified_on": null,
-            "status": "unknown"
+            "value": {
+              "default": "eg4-wallmount-powerpro-14.3",
+              "opt_in_announced": [
+                "solark-s16"
+              ]
+            },
+            "source": "owner approval 2026-11-19: EG4 stays default; S16 opt-in only",
+            "verified_on": "2026-11-19",
+            "status": "verified"
           },
           "grid_services_eligibility": {
             "value": "per program eligible_equipment",
@@ -1014,6 +1296,7 @@
           },
           "models": {
             "value": [
+              "solark-12k-2p-ll",
               "solark-12k-2p-n",
               "solark-15k-2p-n",
               "solark-18k-2p-n"
@@ -1305,7 +1588,8 @@
         "source": "median of street: ShopSolar $4,299, Current Connected $4,350 (chargedreviews.com price log 2026-10-28); American Solar $4,750 (american-solar.com/sol-ark-12k-2p-n-12000w-120-240v-120-208v-220v/)",
         "verified_on": "2026-10-30",
         "status": "verified",
-        "dealer_estimate": "[redacted: private]"
+        "dealer_estimate": "[redacted: private]",
+        "note": "legacy model (superseded by 12K-2P-LL)"
       },
       "solark-15k-2p-n": {
         "value": 5350,
@@ -1326,6 +1610,14 @@
         "source": "2 x 12K street pick (fixes 1x price bug)",
         "verified_on": "2026-10-30",
         "status": "verified"
+      },
+      "solark-12k-2p-ll": {
+        "value": 3999,
+        "source": "Sol-Ark MSRP (list) https://sol-ark.com/residential-energy-solutions/limitless-12k-2p-ll-hybrid-inverter/ ; https://sol-ark.com/meet-the-new-limitless-12k-2p-ll/",
+        "verified_on": "2026-11-19",
+        "status": "verified",
+        "price_basis": "verified-MSRP (list); street price unverified",
+        "street_price": null
       }
     },
     "solar_installed_per_kw": {
@@ -1658,7 +1950,8 @@
         "value": {
           "12K": 9000,
           "15K": 13500,
-          "18K": 16000
+          "18K": 16000,
+          "12K-LL": 10000
         },
         "source": "E:1656-1681",
         "verified_on": null,
@@ -1679,10 +1972,22 @@
       },
       "optional_models": {
         "value": {
-          "solark-12k-2p-n": "loads <= 9 kW, smaller generator, or CLC Connected Solutions eligibility"
+          "solark-12k-2p-n": "LEGACY: CLC Connected Solutions eligibility (prefer_12k)",
+          "solark-12k-2p-ll": "preferred when peak <=10 kW, goal met, generator <=14 kW (GEN port); 100 A passthrough avoids panel upgrade on 100 A service"
         },
-        "source": "owner decision 2026-10-30",
-        "verified_on": "2026-10-30",
+        "source": "owner decisions 2026-10-30 + 2026-11-19",
+        "verified_on": "2026-11-19",
+        "status": "verified"
+      },
+      "ll_rule": {
+        "value": {
+          "model": "solark-12k-2p-ll",
+          "max_peak_w": 10000,
+          "max_generator_kw": 14.0,
+          "else_default": "solark-15k-2p-n"
+        },
+        "source": "owner approval 2026-11-19: 12K-LL wins where load <=10 kW and generator recharge requirement is met; 15K stays default for oversized-gen (>14 kW) rapid recharge",
+        "verified_on": "2026-11-19",
         "status": "verified"
       }
     }

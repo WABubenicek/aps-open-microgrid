@@ -80,7 +80,8 @@ mcp = MCPServer("aps-open-microgrid", instructions="APS Open Microgrid design en
 def design_system(request: dict) -> dict:
     """Size a backup-power microgrid (inverter, batteries, PV, generator) for an address/ZIP and outage goal.
     request keys: address|zip, outage_days (default 7), tier (bare_minimum|...), kwh_day, peak_w, pv_kw_new,
-    pv_kw_existing, gen_allowed, fuel_limit_gal, inverter, prefer_12k, finance_mode (cash|loan)."""
+    pv_kw_existing, gen_allowed, fuel_limit_gal, inverter, prefer_12k (legacy 12K-2P-N), finance_mode (cash|loan),
+    battery_brand="sol-ark-s16" (use ANNOUNCED Sol-Ark S16, preliminary) or include_announced=true (EG4 default + S16 $/kWh comparison)."""
     return t_design_system(request)
 
 @mcp.tool()
@@ -95,7 +96,8 @@ def model_financing(design: dict, request: dict) -> dict:
 
 @mcp.tool()
 def explore_tradeoffs(base_design: dict, request: dict, vary: dict | None = None) -> dict:
-    """Grid of variants around a base design. vary: {battery_units:[..], pv_kw:[..], generator:[..], load_tier:[..]}."""
+    """Grid of variants around a base design. vary: {battery_units:[..], battery:[..], pv_kw:[..], generator:[..], load_tier:[..]}.
+    request.include_announced=true adds the announced Sol-Ark S16 battery (preliminary) where compatible."""
     return t_explore_tradeoffs(base_design, vary, request)
 
 mcp_app = mcp.streamable_http_app(streamable_http_path="/mcp", json_response=True, stateless_http=True,
